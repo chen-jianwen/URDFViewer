@@ -37,7 +37,24 @@ namespace URDFImporter
         {
             InitializeComponent();
             MenuCloseUrdf.IsEnabled = false;
-            UpdateStatus("就绪");
+            UpdateStatusBarNotification("就绪");
+            UpdateStatusBarNotification("欢迎使用 URDF Importer！");
+            if (StatusExpander != null)
+            {
+                StatusExpander.Expanded += (s, e) =>
+                {
+                    if (StatusText != null) StatusText.Text = string.Empty;
+                };
+                StatusExpander.Collapsed += (s, e) =>
+                {
+                    if (StatusHistoryBox != null && StatusText != null)
+                    {
+                        // 取第一行（最新一条）
+                        var lines = StatusHistoryBox.Text.Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries);
+                        StatusText.Text = lines.Length > 0 ? lines[0] : "";
+                    }
+                };
+            }
         }
 
         // ===================== 文件菜单事件 =====================
@@ -56,15 +73,15 @@ namespace URDFImporter
             string? packagePath = LocatePackageRoot(urdfFile);
             if (string.IsNullOrEmpty(packagePath))
             {
-                MessageBox.Show("未能自动定位到package根目录（需包含 urdf 和 meshes 文件夹）！", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
+                UpdateStatusBarNotification("未能自动定位到package根目录（需包含 urdf 和 meshes 文件夹）！");
                 return;
             }
             currentUrdfPath = urdfFile;
             lastPackagePath = packagePath;
-            UpdateFileInfo(currentUrdfPath, lastPackagePath);
             LoadUrdfFile(currentUrdfPath, lastPackagePath);
             MenuCloseUrdf.IsEnabled = true;
             Title = $"URDF Importer - {Path.GetFileName(currentUrdfPath)}";
+            UpdateStatusBarNotification($"已加载URDF文件：{Path.GetFileName(currentUrdfPath)}");
         }
 
         private void MenuCloseUrdf_Click(object sender, RoutedEventArgs e)
@@ -77,11 +94,11 @@ namespace URDFImporter
                 currentUrdfPath = "";
                 MenuCloseUrdf.IsEnabled = false;
                 Title = "URDF Importer";
-                MessageBox.Show("URDF文件已关闭", "信息", MessageBoxButton.OK, MessageBoxImage.Information);
+                UpdateStatusBarNotification("URDF文件已关闭");
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"关闭URDF文件时出错：{ex.Message}", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
+                UpdateStatusBarNotification($"关闭URDF文件时出错：{ex.Message}");
             }
         }
 
@@ -102,11 +119,11 @@ namespace URDFImporter
             try
             {
                 ResetCameraToDefault();
-                MessageBox.Show("视图已重置", "信息", MessageBoxButton.OK, MessageBoxImage.Information);
+                UpdateStatusBarNotification("视图已重置");
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"重置视图时出错：{ex.Message}", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
+                UpdateStatusBarNotification($"重置视图时出错：{ex.Message}");
             }
         }
 
@@ -118,7 +135,7 @@ namespace URDFImporter
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"缩放到适合时出错：{ex.Message}", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
+                UpdateStatusBarNotification($"缩放到适合时出错：{ex.Message}");
             }
         }
 
@@ -144,23 +161,8 @@ namespace URDFImporter
         #region 帮助菜单事件
         private void MenuAbout_Click(object sender, RoutedEventArgs e)
         {
-            string aboutMessage = @"URDF Importer v1.0
-
-这是一个用于加载和显示URDF文件的工具。
-
-功能特性：
-• 加载URDF文件
-• 3D可视化机器人模型
-• 交互式3D视图操作
-• 坐标系显示
-
-开发环境：
-• .NET 8.0
-• WPF
-• HelixToolkit
-
-版权所有 ©JavenChan 2025";
-            MessageBox.Show(aboutMessage, "关于 URDF Importer", MessageBoxButton.OK, MessageBoxImage.Information);
+            string aboutMessage = @"URDF Importer v1.0\n\n这是一个用于加载和显示URDF文件的工具。\n\n功能特性：\n• 加载URDF文件\n• 3D可视化机器人模型\n• 交互式3D视图操作\n• 坐标系显示\n\n开发环境：\n• .NET 8.0\n• WPF\n• HelixToolkit\n\n版权所有 ©JavenChan 2025";
+            UpdateStatusBarNotification(aboutMessage);
         }
         #endregion
 
@@ -180,36 +182,95 @@ namespace URDFImporter
         {
             try
             {
-                UpdateStatus("正在加载URDF文件...");
-                UpdateFileInfo(filePath);
+                UpdateStatusBarNotification("正在加载URDF文件...");
                 robot = UrdfParser.Parse(filePath);
                 if (robot == null)
                 {
-                    UpdateStatus("解析URDF失败");
-                    MessageBox.Show($"URDF文件解析失败！\n文件路径：{filePath}", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
-                    return;
+                UpdateStatusBarNotification("解析URDF失败");
+                UpdateStatusBarNotification($"URDF文件解析失败！\n文件路径：{filePath}");
+                return;
                 }
                 int jointCount = robot.Joints?.Count ?? 0;
                 int linkCount = robot.Links?.Count ?? 0;
                 int meshCount = robot.Links?.Count(l => l.Visual != null && l.Visual.Geometry != null && l.Visual.Geometry.Mesh != null) ?? 0;
-                UpdateModelStats(jointCount, linkCount, meshCount);
-                UpdateStatus($"已加载：{Path.GetFileName(filePath)}");
+
+
+                UpdateStatusBarNotification($"已加载：{Path.GetFileName(filePath)}");
+
                 CreateJointSliders();
+
                 CreateLinkVisuals();
 
                 UpdateLinkVisuals();
 
                 CreateJointCoordinateSystems();
                 UpdateJointCoordinateSystems();
+
+                ShowRobotTopologyTree();
                 //ShowLinkVisuals();
                 string packageInfo = string.IsNullOrEmpty(packagePath) ? "" : $"\nPackage路径：{packagePath}";
-                MessageBox.Show($"URDF文件已成功加载", "加载成功", MessageBoxButton.OK, MessageBoxImage.Information);
+                UpdateStatusBarNotification($"URDF文件已成功加载");
             }
             catch (Exception ex)
             {
-                UpdateStatus("加载失败");
-                MessageBox.Show($"加载URDF文件时发生异常：{ex.Message}", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
+                UpdateStatusBarNotification("加载失败");
+                UpdateStatusBarNotification($"加载URDF文件时发生异常：{ex.Message}");
             }
+        }
+
+
+
+        /// <summary>
+        /// 展示robot的树状拓扑结构到UrdfTreeView
+        /// </summary>
+        private void ShowRobotTopologyTree()
+        {
+            if (UrdfTreeView == null || robot == null || robot.Links == null || robot.Joints == null)
+                return;
+            UrdfTreeView.Items.Clear();
+
+            // 构建link->children joints映射
+            var linkToJoints = new Dictionary<string, List<Joint>>();
+            foreach (var joint in robot.Joints)
+            {
+                if (joint.Parent?.Link == null) continue;
+                if (!linkToJoints.ContainsKey(joint.Parent.Link))
+                    linkToJoints[joint.Parent.Link] = new List<Joint>();
+                linkToJoints[joint.Parent.Link].Add(joint);
+            }
+
+            // 找到根link（未被任何joint作为child的link）
+            var allLinkNames = robot.Links.Select(l => l.Name).ToHashSet();
+            var childLinks = robot.Joints.Select(j => j.Child?.Link).Where(n => !string.IsNullOrEmpty(n)).ToHashSet();
+            var rootLinks = allLinkNames.Except(childLinks).ToList();
+            if (rootLinks.Count == 0 && robot.Links.Count > 0)
+                rootLinks.Add(robot.Links[0].Name); // fallback
+
+            foreach (var root in rootLinks)
+            {
+                var rootItem = BuildLinkTreeItem(root, linkToJoints);
+                UrdfTreeView.Items.Add(rootItem);
+            }
+        }
+
+        private TreeViewItem BuildLinkTreeItem(string linkName, Dictionary<string, List<Joint>> linkToJoints)
+        {
+            var linkItem = new TreeViewItem { Header = $"{linkName}" };
+            if (linkToJoints.TryGetValue(linkName, out var joints))
+            {
+                foreach (var joint in joints)
+                {
+                    var jointItem = new TreeViewItem { Header = $"{joint.Name} ({joint.Type})" };
+                    // 递归添加子link
+                    if (joint.Child?.Link != null)
+                    {
+                        var childLinkItem = BuildLinkTreeItem(joint.Child.Link, linkToJoints);
+                        jointItem.Items.Add(childLinkItem);
+                    }
+                    linkItem.Items.Add(jointItem);
+                }
+            }
+            return linkItem;
         }
 
         private void CreateLinkVisuals()
@@ -444,13 +505,11 @@ namespace URDFImporter
                 {
                     MainViewport.Children.Remove(item);
                 }
-                UpdateFileInfo("未加载文件");
-                UpdateModelStats(0, 0, 0);
-                UpdateStatus("就绪");
+                UpdateStatusBarNotification("就绪");
             }
             catch (Exception ex)
             {
-                UpdateStatus($"清除视图时出错：{ex.Message}");
+                UpdateStatusBarNotification($"清除视图时出错：{ex.Message}");
                 throw;
             }
         }
@@ -499,41 +558,23 @@ namespace URDFImporter
         /// <summary>
         /// 更新状态栏信息
         /// </summary>
-        private void UpdateStatus(string message)
+        private void UpdateStatusBarNotification(string message)
         {
+            string time = DateTime.Now.ToString("HH:mm:ss");
+            string fullMsg = $"[{time}] {message}";
             if (StatusText != null)
+                StatusText.Text = fullMsg;
+            if (StatusHistoryBox != null)
             {
-                StatusText.Text = message;
+                // 新消息插入到最上面
+                if (string.IsNullOrWhiteSpace(StatusHistoryBox.Text))
+                    StatusHistoryBox.Text = fullMsg;
+                else
+                    StatusHistoryBox.Text = fullMsg + "\r\n" + StatusHistoryBox.Text;
             }
         }
 
-        /// <summary>
-        /// 更新文件信息显示
-        /// </summary>
-        private void UpdateFileInfo(string filePath, string packagePath = null)
-        {
-            try
-            {
-                FilePathText?.SetText(filePath);
-                PackagePathText?.SetText(packagePath ?? "-");
-                if (FileSizeText != null && File.Exists(filePath))
-                {
-                    var fileInfo = new FileInfo(filePath);
-                    FileSizeText.Text = $"{fileInfo.Length / 1024.0:F2} KB";
-                }
-                if (PackageSizeText != null && !string.IsNullOrEmpty(packagePath) && Directory.Exists(packagePath))
-                {
-                    long size = GetDirectorySize(new DirectoryInfo(packagePath));
-                    PackageSizeText.Text = $"{size / 1024.0:F2} KB";
-                }
-                LoadTimeText?.SetText(DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"));
-            }
-            catch (Exception ex)
-            {
-                UpdateStatus($"更新文件信息时出错：{ex.Message}");
-            }
-        }
-
+        
         /// <summary>
         /// 递归获取目录大小
         /// </summary>
@@ -556,16 +597,7 @@ namespace URDFImporter
         /// </summary>
         private void UpdateModelStats(int jointCount = 0, int linkCount = 0, int meshCount = 0)
         {
-            try
-            {
-                JointCountText?.SetText(jointCount.ToString());
-                LinkCountText?.SetText(linkCount.ToString());
-                MeshCountText?.SetText(meshCount.ToString());
-            }
-            catch (Exception ex)
-            {
-                UpdateStatus($"更新模型统计时出错：{ex.Message}");
-            }
+            
         }
         #endregion
     }

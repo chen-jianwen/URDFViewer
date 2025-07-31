@@ -5,9 +5,15 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:h="http://helix-toolkit.org/wpf"
         xmlns:local="clr-namespace:URDFImporter"
+        xmlns:hc="https://handyorg.github.io/handycontrol"
         mc:Ignorable="d"
         Title="URDF Importer" Height="600" Width="800"
         WindowState="Maximized">
+    <Window.Resources>
+        <local:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
+        <local:BoolToCollapsedVisibilityConverter x:Key="BoolToCollapsedVisibilityConverter"/>
+    </Window.Resources>
+    
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"></RowDefinition>
@@ -16,160 +22,132 @@
         </Grid.RowDefinitions>
 
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="7*"></ColumnDefinition>
             <ColumnDefinition Width="3*"></ColumnDefinition>
+            <ColumnDefinition Width="7*"></ColumnDefinition>
         </Grid.ColumnDefinitions>
 
         <!-- 菜单栏 -->
-        <Menu Grid.Row="0" Grid.ColumnSpan="2" FontSize="14">
-            <MenuItem Header="文件(_F)" FontSize="14">
-                <MenuItem Name="MenuLoadUrdf" Header="加载URDF文件夹(_O)" Click="MenuLoadUrdf_Click">
+        <Menu Grid.Row="0" Grid.ColumnSpan="2" FontSize="12" >
+            <MenuItem Header="文件(_F)" FontSize="12">
+                <MenuItem Name="MenuLoadUrdf" Header="加载URDF文件夹(_O)" Click="MenuLoadUrdf_Click" FontSize="12">
                     <MenuItem.Icon>
-                        <TextBlock Text="📁" FontSize="14"/>
+                        <TextBlock Text="📁" FontSize="12"/>
                     </MenuItem.Icon>
                 </MenuItem>
                 <Separator/>
-                <MenuItem Name="MenuCloseUrdf" Header="关闭URDF(_C)" Click="MenuCloseUrdf_Click">
+                <MenuItem Name="MenuCloseUrdf" Header="关闭URDF(_C)" Click="MenuCloseUrdf_Click" FontSize="12">
                     <MenuItem.Icon>
-                        <TextBlock Text="❌" FontSize="14"/>
+                        <TextBlock Text="❌" FontSize="12"/>
                     </MenuItem.Icon>
                 </MenuItem>
                 <Separator/>
-                <MenuItem Name="MenuExit" Header="退出(_X)" Click="MenuExit_Click">
+                <MenuItem Name="MenuExit" Header="退出(_X)" Click="MenuExit_Click" FontSize="12">
                     <MenuItem.Icon>
-                        <TextBlock Text="🚪" FontSize="14"/>
+                        <TextBlock Text="🚪" FontSize="12"/>
                     </MenuItem.Icon>
                 </MenuItem>
             </MenuItem>
-            <MenuItem Header="视图(_V)" FontSize="14">
-                <MenuItem Name="MenuResetView" Header="重置视图(_R)" Click="MenuResetView_Click">
+            <MenuItem Header="视图(_V)" FontSize="12">
+                <MenuItem Name="MenuResetView" Header="重置视图(_R)" Click="MenuResetView_Click" FontSize="12">
                     <MenuItem.Icon>
-                        <TextBlock Text="🔄" FontSize="14"/>
+                        <TextBlock Text="🔄" FontSize="12"/>
                     </MenuItem.Icon>
                 </MenuItem>
-                <MenuItem Name="MenuZoomToFit" Header="缩放到适合(_F)" Click="MenuZoomToFit_Click">
+                <MenuItem Name="MenuZoomToFit" Header="缩放到适合(_F)" Click="MenuZoomToFit_Click" FontSize="12">
                     <MenuItem.Icon>
-                        <TextBlock Text="🔍" FontSize="14"/>
+                        <TextBlock Text="🔍" FontSize="12"/>
                     </MenuItem.Icon>
                 </MenuItem>
                 <Separator/>
-                
-                <MenuItem Header="显示连杆模型" Name="MenuShowLinks" IsCheckable="True" IsChecked="True" Click="MenuShowLinks_Click"/>
-                <MenuItem Header="显示关节坐标系" Name="MenuShowJointCoordinates" IsCheckable="True" IsChecked="True" Click="MenuShowJointCoordinates_Click"/>
+                <MenuItem Header="显示连杆模型" Name="MenuShowLinks" IsCheckable="True" IsChecked="True" Click="MenuShowLinks_Click" FontSize="12"/>
+                <MenuItem Header="显示关节坐标系" Name="MenuShowJointCoordinates" IsCheckable="True" IsChecked="True" Click="MenuShowJointCoordinates_Click" FontSize="12"/>
                 <!-- 其他菜单项 -->
             </MenuItem>
-            <MenuItem Header="帮助(_H)" FontSize="14">
-                <MenuItem Name="MenuAbout" Header="关于(_A)" Click="MenuAbout_Click">
+            <MenuItem Header="帮助(_H)" FontSize="12">
+                <MenuItem Name="MenuAbout" Header="关于(_A)" Click="MenuAbout_Click" FontSize="12">
                     <MenuItem.Icon>
-                        <TextBlock Text="ℹ️" FontSize="14"/>
+                        <TextBlock Text="ℹ️" FontSize="12"/>
                     </MenuItem.Icon>
                 </MenuItem>
             </MenuItem>
         </Menu>
 
-        <Grid Grid.Row="1" Grid.Column="0" Background="#1E1E1E">
-            <!-- 3D视图与关节Slider叠加 -->
-            <Grid>
-                <h:HelixViewport3D Name="MainViewport" 
-                                   Background="White"
-                                   ShowCoordinateSystem="True"
-                                   CoordinateSystemLabelForeground="White"
-                                   ShowViewCube="True"
-                                   ViewCubeBackText="后"
-                                   ViewCubeFrontText="前"
-                                   ViewCubeLeftText="左"
-                                   ViewCubeRightText="右"
-                                   ViewCubeTopText="上"
-                                   ViewCubeBottomText="下"
-                                   IsManipulationEnabled="True"
-                                   IsZoomEnabled="True"
-                                   IsRotationEnabled="True"
-                                   IsPanEnabled="True"
-                                   ZoomExtentsWhenLoaded="True"
-                                   ViewCubeHorizontalPosition="Right"
-                                   ViewCubeVerticalPosition="Top"
-                                   IsViewCubeEdgeClicksEnabled="True"
-                                   ShowFrameRate="True">
-                    <h:DefaultLights/>
-                    <h:GridLinesVisual3D Center="0,0,0" Width="1" Length="1" MinorDistance="0.05" MajorDistance="0.01" Thickness="0.001" Fill="Gray"/>
-                    <h:CoordinateSystemVisual3D ArrowLengths="0.05"/>
-                    <h:HelixViewport3D.Camera>
-                        <PerspectiveCamera Position="1.5,1.5,1.5" LookDirection="-1,-1,-1" UpDirection="0,0,1" FieldOfView="45" NearPlaneDistance="0.01" FarPlaneDistance="100"/>
-                    </h:HelixViewport3D.Camera>
-                </h:HelixViewport3D>
-                <!-- 右上角浮动的关节Slider面板 -->
-                <Border Background="#AA222222" CornerRadius="8" Padding="8" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="20" Width="auto">
-                    <StackPanel>
-                        <TextBlock Text="调整关节角度" Foreground="White" FontWeight="Bold" FontSize="14" Margin="0,0,0,6"/>
-                        <StackPanel Name="JointSlidersPanel"/>
-                    </StackPanel>
-                </Border>
-            </Grid>
-        </Grid>
+        <Grid Grid.Row="1" Grid.Column="1">
 
-        <!-- 右侧信息面板 -->
-        <Grid Grid.Row="1" Grid.Column="1" Background="#2D2D30">
-            <Grid.RowDefinitions>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="*"/>
-            </Grid.RowDefinitions>
 
-            <!-- 标题 -->
-            <TextBlock Grid.Row="0" Text="机器人信息" 
-                       Foreground="White" FontSize="16" FontWeight="Bold"
-                       Margin="10,10,10,5" HorizontalAlignment="Center"/>
+            <!-- 3D视图 -->
 
-            <!-- 信息内容 -->
-            <ScrollViewer Grid.Row="1" Margin="10" VerticalScrollBarVisibility="Auto">
+            <h:HelixViewport3D Name="MainViewport" 
+           Margin="5,5,5,5"
+           Background="White"
+           ShowCoordinateSystem="True"
+           CoordinateSystemLabelForeground="White"
+           ShowViewCube="True"
+           ViewCubeBackText="后"
+           ViewCubeFrontText="前"
+           ViewCubeLeftText="左"
+           ViewCubeRightText="右"
+           ViewCubeTopText="上"
+           ViewCubeBottomText="下"
+           IsManipulationEnabled="True"
+           IsZoomEnabled="True"
+           IsRotationEnabled="True"
+           IsPanEnabled="True"
+           ZoomExtentsWhenLoaded="True"
+           ViewCubeHorizontalPosition="Right"
+           ViewCubeVerticalPosition="Top"
+           IsViewCubeEdgeClicksEnabled="True"
+           ShowFrameRate="True">
+                <h:HelixViewport3D.ContextMenu>
+                    <ContextMenu>
+                        <MenuItem Header="重置视图" Click="MenuResetView_Click"/>
+                        <MenuItem Header="缩放到适合" Click="MenuZoomToFit_Click"/>
+                    </ContextMenu>
+                </h:HelixViewport3D.ContextMenu>
+                <h:DefaultLights/>
+                <h:GridLinesVisual3D Center="0,0,0" Width="1" Length="1" MinorDistance="0.05" MajorDistance="0.01" Thickness="0.001" Fill="Gray"/>
+                <h:CoordinateSystemVisual3D ArrowLengths="0.05"/>
+                <h:HelixViewport3D.Camera>
+                    <PerspectiveCamera Position="1.5,1.5,1.5" LookDirection="-1,-1,-1" UpDirection="0,0,1" FieldOfView="45" NearPlaneDistance="0.01" FarPlaneDistance="100"/>
+                </h:HelixViewport3D.Camera>
+            </h:HelixViewport3D>
+            <!-- 右上角浮动的关节Slider面板 -->
+            <Border Background="#AA222222" CornerRadius="8" Padding="8" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="20" Width="auto">
                 <StackPanel>
-                    <!-- URDF文件信息 -->
-                    <GroupBox Header="文件信息" Foreground="White" BorderBrush="Gray" Margin="0,5">
-                        <StackPanel Margin="5">
-                            <TextBlock Text="package路径：" Foreground="LightGray" FontWeight="Bold"/>
-                            <TextBlock Name="PackagePathText" Text="-" Foreground="White" TextWrapping="Wrap" Margin="0,0,0,10"/>
-
-                            <TextBlock Text="URDF文件路径：" Foreground="LightGray" FontWeight="Bold"/>
-                            <TextBlock Name="FilePathText" Text="未加载文件" Foreground="White" 
-                                       TextWrapping="Wrap" Margin="0,0,0,10"/>
-                            
-                            <TextBlock Text="package包大小：" Foreground="LightGray" FontWeight="Bold"/>
-                            <TextBlock Name="PackageSizeText" Text="-" Foreground="White" Margin="0,0,0,10"/>
-
-                            <TextBlock Text="URDF文件大小：" Foreground="LightGray" FontWeight="Bold"/>
-                            <TextBlock Name="FileSizeText" Text="-" Foreground="White" Margin="0,0,0,10"/>
-                            
-                            <TextBlock Text="加载时间：" Foreground="LightGray" FontWeight="Bold"/>
-                            <TextBlock Name="LoadTimeText" Text="-" Foreground="White"/>
-                        </StackPanel>
-                    </GroupBox>
-
-                    <!-- 机器人统计信息 -->
-                    <GroupBox Header="模型统计" Foreground="White" BorderBrush="Gray" Margin="0,5">
-                        <StackPanel Margin="5">
-                            <TextBlock Text="关节数量：" Foreground="LightGray" FontWeight="Bold"/>
-                            <TextBlock Name="JointCountText" Text="0" Foreground="White" Margin="0,0,0,5"/>
-                            
-                            <TextBlock Text="连杆数量：" Foreground="LightGray" FontWeight="Bold"/>
-                            <TextBlock Name="LinkCountText" Text="0" Foreground="White" Margin="0,0,0,5"/>
-                            
-                            <TextBlock Text="网格数量：" Foreground="LightGray" FontWeight="Bold"/>
-                            <TextBlock Name="MeshCountText" Text="0" Foreground="White"/>
-                        </StackPanel>
-                    </GroupBox>
-
-                    <!-- 动态关节角度控制 -->
-                    <!-- 关节角度Slider已集成到三维视图区 -->
-
+                    <TextBlock Text="调整关节角度" Foreground="White" FontWeight="Bold" FontSize="14" Margin="0,0,0,6"/>
+                    <StackPanel Name="JointSlidersPanel"/>
                 </StackPanel>
-            </ScrollViewer>
+            </Border>
         </Grid>
 
-        <!-- 状态栏 -->
+        <!-- 左侧：URDF拓扑树和信息通知 -->
+        <Grid Grid.Row="1" Grid.Column="0" >
+            <Grid.RowDefinitions>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="150"/>
+            </Grid.RowDefinitions>
+            <!-- URDF拓扑树 -->
+            <GroupBox Header="机器人URDF" Margin="5,5,5,5" Grid.Row="0" Style="{StaticResource GroupBoxTab}">
+                <TreeView Name="UrdfTreeView"  BorderThickness="0"/>
+            </GroupBox>
+            <!-- 属性详情栏 -->
+            <GroupBox Header="属性详情"  Margin="5,0,5,5" Grid.Row="1" Style="{StaticResource GroupBoxTab}">
+                <TextBox Name="InfoTextBox" BorderThickness="0" IsReadOnly="True" TextWrapping="Wrap" VerticalScrollBarVisibility="Auto" Style="{StaticResource TextBoxExtend}"/>
+            </GroupBox>
+        </Grid>
+
+        <!-- 状态栏（可展开历史） -->
         <StatusBar Grid.Row="2" Grid.ColumnSpan="2">
-            <StatusBarItem>
-                <TextBlock Name="StatusText" Text="就绪"/>
+            <StatusBarItem HorizontalAlignment ="Right">
+                <Expander x:Name="StatusExpander" ExpandDirection="Up" IsExpanded="False" Width="auto" BorderThickness="0" Background="Transparent">
+                    <Expander.Header>
+                        <TextBlock x:Name="StatusText" Text="就绪"/>
+                    </Expander.Header>
+                    <Border Padding="4" Background="White" MaxHeight="100">
+                        <TextBox x:Name="StatusHistoryBox" FontSize="12" BorderThickness="0" IsReadOnly="True" TextWrapping="Wrap" VerticalScrollBarVisibility="Auto" AcceptsReturn="True"/>
+                    </Border>
+                </Expander>
             </StatusBarItem>
-           
         </StatusBar>
 
     </Grid>
