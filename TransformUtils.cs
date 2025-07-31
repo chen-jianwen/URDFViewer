@@ -13,7 +13,7 @@ namespace URDFImporter
             var rx = Matrix4x4.CreateRotationX((float)roll);
             var ry = Matrix4x4.CreateRotationY((float)pitch);
             var rz = Matrix4x4.CreateRotationZ((float)yaw);
-            var r = rz * ry * rx;
+            var r = rx * ry * rz;
             var t = Matrix4x4.CreateTranslation((float)x, (float)y, (float)z);
             return r * t;
         }

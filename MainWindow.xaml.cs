@@ -16,48 +16,53 @@ using System.Xml;
 
 namespace URDFImporter
 {
+
     /// <summary>
     /// MainWindow 交互逻辑
     /// </summary>
     public partial class MainWindow : Window
     {
-        // ===================== 字段 =====================
-        private string currentUrdfPath = "";
+        // ========== 字段 ==========
+        private string currentUrdfPath = string.Empty;
         private string? lastPackagePath = null;
         private Robot? robot = null;
-
-        private Dictionary<string, ModelVisual3D> linkVisuals = new();
-        private Dictionary<string, CoordinateSystemVisual3D> jointCoordinateVisuals = new();
+        private readonly Dictionary<string, ModelVisual3D> linkVisuals = new();
+        private readonly Dictionary<string, CoordinateSystemVisual3D> jointCoordinateVisuals = new();
         private bool showLinks = true;
         private bool showJointCoordinates = true;
 
-
-        // ===================== 构造函数 =====================
+        // ========== 构造函数 ==========
         public MainWindow()
         {
             InitializeComponent();
             MenuCloseUrdf.IsEnabled = false;
             UpdateStatusBarNotification("就绪");
             UpdateStatusBarNotification("欢迎使用 URDF Importer！");
-            if (StatusExpander != null)
-            {
-                StatusExpander.Expanded += (s, e) =>
-                {
-                    if (StatusText != null) StatusText.Text = string.Empty;
-                };
-                StatusExpander.Collapsed += (s, e) =>
-                {
-                    if (StatusHistoryBox != null && StatusText != null)
-                    {
-                        // 取第一行（最新一条）
-                        var lines = StatusHistoryBox.Text.Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries);
-                        StatusText.Text = lines.Length > 0 ? lines[0] : "";
-                    }
-                };
-            }
+            RegisterStatusExpanderEvents();
         }
 
-        // ===================== 文件菜单事件 =====================
+        /// <summary>
+        /// 注册状态栏通知历史展开/收起事件
+        /// </summary>
+        private void RegisterStatusExpanderEvents()
+        {
+            if (StatusExpander == null) return;
+            StatusExpander.Expanded += (s, e) =>
+            {
+                if (StatusText != null) StatusText.Text = string.Empty;
+            };
+            StatusExpander.Collapsed += (s, e) =>
+            {
+                if (StatusHistoryBox != null && StatusText != null)
+                {
+                    // 取第一行（最新一条）
+                    var lines = StatusHistoryBox.Text.Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries);
+                    StatusText.Text = lines.Length > 0 ? lines[0] : string.Empty;
+                }
+            };
+        }
+
+        // ========== 文件菜单事件 ==========
         #region 文件菜单事件
         private void MenuLoadUrdf_Click(object sender, RoutedEventArgs e)
         {
@@ -91,6 +96,9 @@ namespace URDFImporter
                 ClearViewport();
                 if (JointSlidersPanel != null)
                     JointSlidersPanel.Children.Clear(); // 清空所有滑块
+                if (UrdfTreeView != null)
+                    UrdfTreeView.Items.Clear(); // 清空树
+                
                 currentUrdfPath = "";
                 MenuCloseUrdf.IsEnabled = false;
                 Title = "URDF Importer";
@@ -112,7 +120,7 @@ namespace URDFImporter
         }
         #endregion
 
-        // ===================== 视图菜单事件 =====================
+        // ========== 视图菜单事件 ==========
         #region 视图菜单事件
         private void MenuResetView_Click(object sender, RoutedEventArgs e)
         {
@@ -157,7 +165,7 @@ namespace URDFImporter
 
         #endregion
 
-        // ===================== 帮助菜单事件 =====================
+        // ========== 帮助菜单事件 ==========
         #region 帮助菜单事件
         private void MenuAbout_Click(object sender, RoutedEventArgs e)
         {
@@ -168,7 +176,7 @@ namespace URDFImporter
 
        
 
-        // ===================== 主要业务逻辑 =====================
+        // ========== 主要业务逻辑 ==========
         #region 主要业务逻辑
 
         
@@ -186,9 +194,9 @@ namespace URDFImporter
                 robot = UrdfParser.Parse(filePath);
                 if (robot == null)
                 {
-                UpdateStatusBarNotification("解析URDF失败");
-                UpdateStatusBarNotification($"URDF文件解析失败！\n文件路径：{filePath}");
-                return;
+                    UpdateStatusBarNotification("解析URDF失败");
+                    UpdateStatusBarNotification($"URDF文件解析失败！\n文件路径：{filePath}");
+                    return;
                 }
                 int jointCount = robot.Joints?.Count ?? 0;
                 int linkCount = robot.Links?.Count ?? 0;
@@ -251,6 +259,166 @@ namespace URDFImporter
                 var rootItem = BuildLinkTreeItem(root, linkToJoints);
                 UrdfTreeView.Items.Add(rootItem);
             }
+
+            // 注册选中事件
+            UrdfTreeView.SelectedItemChanged -= UrdfTreeView_SelectedItemChanged;
+            UrdfTreeView.SelectedItemChanged += UrdfTreeView_SelectedItemChanged;
+        }
+
+        /// <summary>
+        /// TreeView 节点选中事件，显示属性
+        /// </summary>
+        private void UrdfTreeView_SelectedItemChanged(object sender, RoutedPropertyChangedEventArgs<object> e)
+        {
+            if (InfoGrid == null) return;
+            InfoGrid.Children.Clear();
+            InfoGrid.RowDefinitions.Clear();
+            if (e.NewValue is TreeViewItem item)
+            {
+                string header = item.Header?.ToString() ?? "";
+                if (robot != null)
+                {
+                    var link = robot.Links?.FirstOrDefault(l => header == l.Name);
+                    if (link != null)
+                    {
+                        ShowLinkInfoTable(link);
+                        return;
+                    }
+                    var jointName = header.Split(' ').FirstOrDefault();
+                    var joint = robot.Joints?.FirstOrDefault(j => j.Name == jointName);
+                    if (joint != null)
+                    {
+                        ShowJointInfoTable(joint);
+                        return;
+                    }
+                }
+                ShowInfoTable(new[]{("名称", header)});
+            }
+        }
+
+        /// <summary>
+        /// 显示link属性表格
+        /// </summary>
+        private void ShowLinkInfoTable(Link link)
+        {
+            var rows = new List<(string, string)>
+            {
+                ("类型", "Link"),
+                ("名称", link.Name)
+            };
+            // Visual
+            if (link.Visual != null)
+            {
+                if (link.Visual.Geometry?.Mesh != null)
+                    rows.Add(("Mesh", link.Visual.Geometry.Mesh.Filename));
+                if (link.Visual.Origin != null)
+                    rows.Add(("Visual Origin", link.Visual.Origin.ToString()));
+                if (link.Visual.Material != null)
+                    rows.Add(("Material", link.Visual.Material.Name ?? ""));
+            }
+            // Collision
+            if (link.Collision != null)
+            {
+                if (link.Collision.Geometry?.Mesh != null)
+                    rows.Add(("Collision Mesh", link.Collision.Geometry.Mesh.Filename));
+                if (link.Collision.Origin != null)
+                    rows.Add(("Collision Origin", link.Collision.Origin.ToString()));
+            }
+            // Inertial
+            if (link.Inertial != null)
+            {
+                rows.Add(("质量", link.Inertial.Mass.ToString()));
+                if (link.Inertial.Origin != null)
+                    rows.Add(("惯性原点", link.Inertial.Origin.ToString()));
+                if (link.Inertial.Inertia != null)
+                {
+                    rows.Add(("惯性矩阵", $"ixx={link.Inertial.Inertia.Ixx}, iyy={link.Inertial.Inertia.Iyy}, izz={link.Inertial.Inertia.Izz}, ixy={link.Inertial.Inertia.Ixy}, ixz={link.Inertial.Inertia.Ixz}, iyz={link.Inertial.Inertia.Iyz}"));
+                }
+            }
+            // 父子关系（通过joint反查）
+            if (robot != null)
+            {
+                var parentJoint = robot.Joints?.FirstOrDefault(j => j.Child?.Link == link.Name);
+                if (parentJoint != null && parentJoint.Parent?.Link != null)
+                    rows.Add(("父Link", parentJoint.Parent.Link));
+                var childJoints = robot.Joints?.Where(j => j.Parent?.Link == link.Name).Select(j => j.Child?.Link).Where(n => !string.IsNullOrEmpty(n)).ToList();
+                if (childJoints != null && childJoints.Count > 0)
+                    rows.Add(("子Link", string.Join(", ", childJoints)));
+            }
+            ShowInfoTable(rows);
+        }
+
+        /// <summary>
+        /// 显示joint属性表格
+        /// </summary>
+        private void ShowJointInfoTable(Joint joint)
+        {
+            var rows = new List<(string, string)>
+            {
+                ("类型", "Joint"),
+                ("名称", joint.Name),
+                ("Type", joint.Type.ToString())
+            };
+            if (joint.Parent?.Link != null)
+                rows.Add(("Parent Link", joint.Parent.Link));
+            if (joint.Child?.Link != null)
+                rows.Add(("Child Link", joint.Child.Link));
+            if (joint.Origin != null)
+                rows.Add(("Origin", joint.Origin.ToString()));
+            if (joint.Axis != null)
+                rows.Add(("Axis", $"{joint.Axis.X}, {joint.Axis.Y}, {joint.Axis.Z}"));
+            if (joint.Limit != null)
+            {
+                rows.Add(("Limit Lower", joint.Limit.Lower.ToString()));
+                rows.Add(("Limit Upper", joint.Limit.Upper.ToString()));
+                rows.Add(("Effort", joint.Limit.Effort.ToString()));
+                rows.Add(("Velocity", joint.Limit.Velocity.ToString()));
+            }
+            //if (joint.Dynamics != null)
+            //{
+            //    rows.Add(("Damping", joint.Dynamics.Damping.ToString()));
+            //    rows.Add(("Friction", joint.Dynamics.Friction.ToString()));
+            //}
+            //if (joint.Calibration != null)
+            //{
+            //    if (joint.Calibration.Rising != null)
+            //        rows.Add(("Calibration Rising", joint.Calibration.Rising.ToString()));
+            //    if (joint.Calibration.Falling != null)
+            //        rows.Add(("Calibration Falling", joint.Calibration.Falling.ToString()));
+            //}
+            //if (joint.SafetyController != null)
+            //{
+            //    rows.Add(("Soft Lower Limit", joint.SafetyController.SoftLowerLimit.ToString()));
+            //    rows.Add(("Soft Upper Limit", joint.SafetyController.SoftUpperLimit.ToString()));
+            //    rows.Add(("K Position", joint.SafetyController.KPosition.ToString()));
+            //    rows.Add(("K Velocity", joint.SafetyController.KVelocity.ToString()));
+            //}
+            // 可扩展更多属性
+            ShowInfoTable(rows);
+        }
+
+        /// <summary>
+        /// 通用属性表格渲染
+        /// </summary>
+        private void ShowInfoTable(IEnumerable<(string, string)> rows)
+        {
+            InfoGrid.Children.Clear();
+            InfoGrid.RowDefinitions.Clear();
+            int row = 0;
+            foreach (var (key, value) in rows)
+            {
+                InfoGrid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
+                var keyBlock = new TextBlock { Text = key, FontWeight = FontWeights.Bold, Margin = new Thickness(2,2,8,2), VerticalAlignment = VerticalAlignment.Center };
+                var valueBlock = new TextBlock { Text = value, TextWrapping = TextWrapping.Wrap, Margin = new Thickness(2,2,2,2), VerticalAlignment = VerticalAlignment.Center };
+                Grid.SetRow(keyBlock, row); Grid.SetColumn(keyBlock, 0);
+                Grid.SetRow(valueBlock, row); Grid.SetColumn(valueBlock, 1);
+                InfoGrid.Children.Add(keyBlock);
+                InfoGrid.Children.Add(valueBlock);
+                row++;
+            }
+            InfoGrid.ColumnDefinitions.Clear();
+            InfoGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(80) });
+            InfoGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
         }
 
         private TreeViewItem BuildLinkTreeItem(string linkName, Dictionary<string, List<Joint>> linkToJoints)
@@ -281,6 +449,7 @@ namespace URDFImporter
                 MainViewport.Children.Remove(v);
             linkVisuals.Clear();
 
+
             var importer = new ModelImporter();
 
             foreach (var link in robot.Links)
@@ -289,6 +458,7 @@ namespace URDFImporter
                 if (link.Visual?.Geometry?.Mesh != null && !string.IsNullOrEmpty(link.Visual.Geometry.Mesh.Filename))
                 {
                     string meshPath = link.Visual.Geometry.Mesh.Filename;
+                    UpdateStatusBarNotification($"[调试] 原始mesh路径: {meshPath}");
                     if (meshPath.StartsWith("package://") && lastPackagePath != null)
                     {
                         var relPath = meshPath.Substring("package://".Length);
@@ -296,10 +466,72 @@ namespace URDFImporter
                         if (slashIndex >= 0)
                             relPath = relPath.Substring(slashIndex + 1);
                         meshPath = System.IO.Path.Combine(lastPackagePath, relPath.Replace('/', System.IO.Path.DirectorySeparatorChar));
+                        UpdateStatusBarNotification($"[调试] 转换后mesh路径: {meshPath}");
                     }
-                    if (File.Exists(meshPath) && string.Equals(Path.GetExtension(meshPath), ".STL", StringComparison.OrdinalIgnoreCase))
+                    // 如果文件不存在，尝试在 package 下的 meshes 文件夹递归查找
+                    if (!File.Exists(meshPath) && lastPackagePath != null)
                     {
-                        try { model = importer.Load(meshPath); } catch { }
+                        string meshesDir = Path.Combine(lastPackagePath, "meshes");
+                        UpdateStatusBarNotification($"[调试] meshesDir: {meshesDir}");
+                        if (Directory.Exists(meshesDir))
+                        {
+                            string meshFileName = Path.GetFileName(link.Visual.Geometry.Mesh.Filename);
+                            UpdateStatusBarNotification($"[调试] meshFileName: {meshFileName}");
+                            var allFiles = Directory.GetFiles(meshesDir, "*", SearchOption.AllDirectories);
+                            UpdateStatusBarNotification($"[调试] meshes下文件数: {allFiles.Length}");
+                            // 优先全名匹配，其次模糊包含，忽略大小写
+                            var foundFiles = allFiles
+                                .Where(f => string.Equals(Path.GetFileName(f), meshFileName, StringComparison.OrdinalIgnoreCase))
+                                .ToList();
+                            if (foundFiles.Count == 0)
+                            {
+                                foundFiles = allFiles
+                                    .Where(f => Path.GetFileName(f).IndexOf(meshFileName, StringComparison.OrdinalIgnoreCase) >= 0)
+                                    .ToList();
+                                UpdateStatusBarNotification($"[调试] 模糊匹配结果数: {foundFiles.Count}");
+                            }
+                            else
+                            {
+                                UpdateStatusBarNotification($"[调试] 全名匹配结果数: {foundFiles.Count}");
+                            }
+                            if (foundFiles.Count > 0)
+                            {
+                                meshPath = foundFiles.OrderBy(f => f.Length).First();
+                                UpdateStatusBarNotification($"[调试] 匹配到mesh路径: {meshPath}");
+                            }
+                            else
+                            {
+                                UpdateStatusBarNotification($"[调试] 未找到匹配mesh文件");
+                            }
+                        }
+                        else
+                        {
+                            UpdateStatusBarNotification($"[调试] meshes目录不存在: {meshesDir}");
+                        }
+                    }
+                    if (File.Exists(meshPath))
+                    {
+                        var ext = Path.GetExtension(meshPath).ToLowerInvariant();
+                        try
+                        {
+                            if (ext == ".stl")
+                            {
+                                model = importer.Load(meshPath);
+                            }
+                            else if (ext == ".dae")
+                            {
+                                model = importer.Load(meshPath);
+                            }
+                            // 可扩展更多格式
+                        }
+                        catch (Exception ex)
+                        {
+                            UpdateStatusBarNotification($"[调试] 加载模型异常: {ex.Message}");
+                        }
+                    }
+                    else
+                    {
+                        UpdateStatusBarNotification($"链接 {link.Name} 的网格文件不存在：{meshPath}");
                     }
                 }
                 if (model == null)
@@ -378,16 +610,19 @@ namespace URDFImporter
                     Margin = new Thickness(5, 0, 5, 0),
                     Tag = joint.Name
                 };
-                var valueText = new TextBlock
+                var valueBox = new TextBox
                 {
-                    Width = 50,
-                    Foreground = Brushes.LightGreen,
-                    VerticalAlignment = VerticalAlignment.Center,
-                    Text = slider.Value.ToString("F2")
+                    Width = 60,
+                    Margin = new Thickness(2,0,2,0),
+                    VerticalContentAlignment = VerticalAlignment.Center,
+                    Text = slider.Value.ToString("F2"),
+                    FontSize = 12
                 };
+                // slider -> textbox
                 slider.ValueChanged += (s, e) =>
                 {
-                    valueText.Text = slider.Value.ToString("F2");
+                    if (valueBox.Text != slider.Value.ToString("F2"))
+                        valueBox.Text = slider.Value.ToString("F2");
                     if (slider.Tag is string jointName && robot?.Joints != null)
                     {
                         var targetJoint = robot.Joints.FirstOrDefault(j => j.Name == jointName);
@@ -399,9 +634,31 @@ namespace URDFImporter
                     UpdateJointCoordinateSystems();
                     UpdateLinkVisuals();
                 };
+                // textbox -> slider
+                valueBox.LostFocus += (s, e) =>
+                {
+                    if (double.TryParse(valueBox.Text, out double v))
+                    {
+                        v = Math.Max(slider.Minimum, Math.Min(slider.Maximum, v));
+                        if (Math.Abs(slider.Value - v) > 1e-6)
+                            slider.Value = v;
+                        valueBox.Text = v.ToString("F2");
+                    }
+                    else
+                    {
+                        valueBox.Text = slider.Value.ToString("F2");
+                    }
+                };
+                valueBox.KeyDown += (s, e) =>
+                {
+                    if (e.Key == System.Windows.Input.Key.Enter)
+                    {
+                        valueBox.MoveFocus(new System.Windows.Input.TraversalRequest(System.Windows.Input.FocusNavigationDirection.Next));
+                    }
+                };
                 panel.Children.Add(label);
                 panel.Children.Add(slider);
-                panel.Children.Add(valueText);
+                panel.Children.Add(valueBox);
                 JointSlidersPanel.Children.Add(panel);
             }
         }
@@ -515,7 +772,7 @@ namespace URDFImporter
         }
         #endregion
 
-        // ===================== 辅助方法 =====================
+        // ========== 辅助方法 ==========
         #region 辅助方法
         /// <summary>
         /// 自动定位package根目录（需包含 urdf 和 meshes 文件夹）
@@ -537,6 +794,7 @@ namespace URDFImporter
             return null;
         }
 
+
         /// <summary>
         /// 重置相机到默认视角
         /// </summary>
@@ -555,8 +813,9 @@ namespace URDFImporter
             }
         }
 
+
         /// <summary>
-        /// 更新状态栏信息
+        /// 更新状态栏信息（带时间戳，自动追加到历史）
         /// </summary>
         private void UpdateStatusBarNotification(string message)
         {
@@ -602,16 +861,5 @@ namespace URDFImporter
         #endregion
     }
 
-    // ===================== 扩展方法 =====================
-    /// <summary>
-    /// 扩展方法用于简化TextBlock赋值
-    /// </summary>
-    public static class TextBlockExtensions
-    {
-        public static void SetText(this TextBlock? textBlock, string text)
-        {
-            if (textBlock != null)
-                textBlock.Text = text;
-        }
-    }
+   
 }
