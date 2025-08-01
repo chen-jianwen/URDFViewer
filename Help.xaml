@@ -1,0 +1,82 @@
+﻿<Window x:Class="URDFImporter.Help"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:URDFImporter"
+        mc:Ignorable="d"
+        Title="Help" Height="650" Width="850">
+    <Grid Background="#F7F7F7">
+        <Border CornerRadius="12" Background="White" Padding="32" Margin="40">
+            <ScrollViewer VerticalScrollBarVisibility="Auto">
+                <StackPanel Margin="10,10,10,10">
+                    <TextBlock Text="帮助中心" FontSize="28" FontWeight="Bold" Foreground="#2D5A9B" Margin="0,0,0,18" />
+                    <TextBlock Text="URDF Importer 是一款用于加载和可视化URDF机器人模型的工具。" FontSize="16" Foreground="#444" Margin="0,0,0,12" TextWrapping="Wrap" />
+                    <TextBlock Text="操作指南" FontSize="20" FontWeight="SemiBold" Foreground="#2D5A9B" Margin="0,16,0,8" />
+                    <TextBlock FontSize="14" Foreground="#444" Margin="0,0,0,8" TextWrapping="Wrap">
+                        <Run Text="1. 点击菜单栏‘文件’->‘打开URDF’，选择机器人模型文件。"/>
+                        <LineBreak/>
+                        <Run Text="2. 通过左侧树状结构浏览机器人拓扑。"/>
+                        <LineBreak/>
+                        <Run Text="3. 使用下方滑块调整关节参数，实时查看模型变化。"/>
+                        <LineBreak/>
+                        <Run Text="4. 可通过视图菜单显示/隐藏连杆和关节坐标系。"/>
+                    </TextBlock>
+                    <TextBlock Text="常见问题" FontSize="20" FontWeight="SemiBold" Foreground="#2D5A9B" Margin="0,16,0,8" />
+                    <Expander Header="为什么无法加载模型？" Margin="0,0,0,16">
+                        <Border BorderBrush="#2D5A9B" BorderThickness="1" CornerRadius="4" Padding="6" Margin="0,2,0,2">
+                            <TextBlock Text="请确认URDF文件路径正确，且package目录下包含meshes文件夹。" TextWrapping="Wrap" FontSize="14" />
+                        </Border>
+                    </Expander>
+                    <Expander Header="模型显示异常怎么办？" Margin="0,0,0,16">
+                        <Border BorderBrush="#2D5A9B" BorderThickness="1" CornerRadius="4" Padding="6" Margin="0,2,0,2">
+                            <TextBlock Text="请检查网格文件格式是否支持（推荐STL/DAE），并确保文件未损坏。" TextWrapping="Wrap" FontSize="14" />
+                        </Border>
+                    </Expander>
+                    <Expander Header="如何重置视图？" Margin="0,0,0,16">
+                        <Border BorderBrush="#2D5A9B" BorderThickness="1" CornerRadius="4" Padding="6" Margin="0,2,0,2">
+                            <TextBlock Text="点击‘视图’菜单中的‘重置视角’即可。" TextWrapping="Wrap" FontSize="14" />
+                        </Border>
+                    </Expander>
+                    <TextBlock Text="快捷键" FontSize="20" FontWeight="SemiBold" Foreground="#2D5A9B" Margin="0,16,0,8" />
+                    <Grid Margin="0,0,0,8">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="150"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+                        <TextBlock Text="Ctrl+O" FontSize="15" Foreground="#2D5A9B" Grid.Row="0" Grid.Column="0" Margin="0,2"/>
+                        <TextBlock Text="加载URDF文件夹" FontSize="15" Foreground="#444" Grid.Row="0" Grid.Column="1" Margin="8,2"/>
+                        <TextBlock Text="Ctrl+W" FontSize="15" Foreground="#2D5A9B" Grid.Row="1" Grid.Column="0" Margin="0,2"/>
+                        <TextBlock Text="关闭URDF" FontSize="15" Foreground="#444" Grid.Row="1" Grid.Column="1" Margin="8,2"/>
+                        <TextBlock Text="Ctrl+Q" FontSize="15" Foreground="#2D5A9B" Grid.Row="2" Grid.Column="0" Margin="0,2"/>
+                        <TextBlock Text="退出程序" FontSize="15" Foreground="#444" Grid.Row="2" Grid.Column="1" Margin="8,2"/>
+                        <TextBlock Text="Ctrl+R" FontSize="15" Foreground="#2D5A9B" Grid.Row="3" Grid.Column="0" Margin="0,2"/>
+                        <TextBlock Text="重置视图" FontSize="15" Foreground="#444" Grid.Row="3" Grid.Column="1" Margin="8,2"/>
+                        <TextBlock Text="Ctrl+F" FontSize="15" Foreground="#2D5A9B" Grid.Row="4" Grid.Column="0" Margin="0,2"/>
+                        <TextBlock Text="缩放到适合" FontSize="15" Foreground="#444" Grid.Row="4" Grid.Column="1" Margin="8,2"/>
+                        <TextBlock Text="F1" FontSize="15" Foreground="#2D5A9B" Grid.Row="5" Grid.Column="0" Margin="0,2"/>
+                        <TextBlock Text="帮助中心" FontSize="15" Foreground="#444" Grid.Row="5" Grid.Column="1" Margin="8,2"/>
+                        <TextBlock Text="Alt+A" FontSize="15" Foreground="#2D5A9B" Grid.Row="6" Grid.Column="0" Margin="0,2"/>
+                        <TextBlock Text="关于" FontSize="15" Foreground="#444" Grid.Row="6" Grid.Column="1" Margin="8,2"/>
+                    </Grid>
+                    <TextBlock FontSize="14" Foreground="#888" Margin="0,24,0,0" TextWrapping="Wrap">
+                        <Run Text="如需更多帮助，请联系："/>
+                        <Hyperlink NavigateUri="mailto:javenchan1994@foxmail.com" Foreground="#2D5A9B" RequestNavigate="Hyperlink_RequestNavigate">
+                            javenchan1994@foxmail.com
+                        </Hyperlink>
+                    </TextBlock>
+                </StackPanel>
+            </ScrollViewer>
+        </Border>
+    </Grid>
+</Window>

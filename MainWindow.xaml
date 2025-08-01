@@ -13,7 +13,17 @@
         <local:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
         <local:BoolToCollapsedVisibilityConverter x:Key="BoolToCollapsedVisibilityConverter"/>
     </Window.Resources>
-    
+
+    <Window.InputBindings>
+        <KeyBinding Key="O" Modifiers="Control" Command="{x:Static local:MainWindow.LoadUrdfCommand}" />
+        <KeyBinding Key="W" Modifiers="Control" Command="{x:Static local:MainWindow.CloseUrdfCommand}" />
+        <KeyBinding Key="Q" Modifiers="Control" Command="{x:Static local:MainWindow.ExitCommand}" />
+        <KeyBinding Key="R" Modifiers="Control" Command="{x:Static local:MainWindow.ResetViewCommand}" />
+        <KeyBinding Key="F" Modifiers="Control" Command="{x:Static local:MainWindow.ZoomToFitCommand}" />
+        <KeyBinding Key="F1" Command="{x:Static local:MainWindow.HelpCommand}" />
+        <KeyBinding Key="A" Modifiers="Alt" Command="{x:Static local:MainWindow.AboutCommand}" />
+    </Window.InputBindings>
+
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"></RowDefinition>
@@ -29,31 +39,31 @@
         <!-- 菜单栏 -->
         <Menu Grid.Row="0" Grid.ColumnSpan="2" FontSize="12" >
             <MenuItem Header="文件(_F)" FontSize="12">
-                <MenuItem Name="MenuLoadUrdf" Header="加载URDF文件夹(_O)" Click="MenuLoadUrdf_Click" FontSize="12">
+                <MenuItem Name="MenuLoadUrdf" Header="加载URDF文件夹(_O)" Click="MenuLoadUrdf_Click" FontSize="12" InputGestureText="Ctrl+O">
                     <MenuItem.Icon>
                         <TextBlock Text="📁" FontSize="12"/>
                     </MenuItem.Icon>
                 </MenuItem>
                 <Separator/>
-                <MenuItem Name="MenuCloseUrdf" Header="关闭URDF(_C)" Click="MenuCloseUrdf_Click" FontSize="12">
+                <MenuItem Name="MenuCloseUrdf" Header="关闭URDF(_C)" Click="MenuCloseUrdf_Click" FontSize="12" InputGestureText="Ctrl+W">
                     <MenuItem.Icon>
                         <TextBlock Text="❌" FontSize="12"/>
                     </MenuItem.Icon>
                 </MenuItem>
                 <Separator/>
-                <MenuItem Name="MenuExit" Header="退出(_X)" Click="MenuExit_Click" FontSize="12">
+                <MenuItem Name="MenuExit" Header="退出(_X)" Click="MenuExit_Click" FontSize="12" InputGestureText="Ctrl+Q">
                     <MenuItem.Icon>
                         <TextBlock Text="🚪" FontSize="12"/>
                     </MenuItem.Icon>
                 </MenuItem>
             </MenuItem>
             <MenuItem Header="视图(_V)" FontSize="12">
-                <MenuItem Name="MenuResetView" Header="重置视图(_R)" Click="MenuResetView_Click" FontSize="12">
+                <MenuItem Name="MenuResetView" Header="重置视图(_R)" Click="MenuResetView_Click" FontSize="12" InputGestureText="Ctrl+R">
                     <MenuItem.Icon>
                         <TextBlock Text="🔄" FontSize="12"/>
                     </MenuItem.Icon>
                 </MenuItem>
-                <MenuItem Name="MenuZoomToFit" Header="缩放到适合(_F)" Click="MenuZoomToFit_Click" FontSize="12">
+                <MenuItem Name="MenuZoomToFit" Header="缩放到适合(_F)" Click="MenuZoomToFit_Click" FontSize="12" InputGestureText="Ctrl+F">
                     <MenuItem.Icon>
                         <TextBlock Text="🔍" FontSize="12"/>
                     </MenuItem.Icon>
@@ -64,7 +74,12 @@
                 <!-- 其他菜单项 -->
             </MenuItem>
             <MenuItem Header="帮助(_H)" FontSize="12">
-                <MenuItem Name="MenuAbout" Header="关于(_A)" Click="MenuAbout_Click" FontSize="12">
+                <MenuItem Name="MenuHelp" Header="帮助中心(_H)" Click="MenuHelp_click" FontSize="12" InputGestureText="F1">
+                    <MenuItem.Icon>
+                        <TextBlock Text="❓" FontSize="12"/>
+                    </MenuItem.Icon>
+                </MenuItem>
+                <MenuItem Name="MenuAbout" Header="关于(_A)" Click="MenuAbout_Click" FontSize="12" InputGestureText="Alt+A">
                     <MenuItem.Icon>
                         <TextBlock Text="ℹ️" FontSize="12"/>
                     </MenuItem.Icon>

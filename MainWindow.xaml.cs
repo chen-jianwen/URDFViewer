@@ -12,11 +12,11 @@ using System.Linq;
 using System.Numerics;
 using URDFImporter;
 using System.Xml;
+using System.Windows.Input;
 
 
 namespace URDFImporter
 {
-
     /// <summary>
     /// MainWindow 交互逻辑
     /// </summary>
@@ -31,10 +31,29 @@ namespace URDFImporter
         private bool showLinks = true;
         private bool showJointCoordinates = true;
 
+
+        // ========== 快捷指令 ==========
+        public static readonly RoutedCommand LoadUrdfCommand = new RoutedCommand();
+        public static readonly RoutedCommand CloseUrdfCommand = new RoutedCommand();
+        public static readonly RoutedCommand ExitCommand = new RoutedCommand();
+        public static readonly RoutedCommand ResetViewCommand = new RoutedCommand();
+        public static readonly RoutedCommand ZoomToFitCommand = new RoutedCommand();
+        public static readonly RoutedCommand HelpCommand = new RoutedCommand();
+        public static readonly RoutedCommand AboutCommand = new RoutedCommand();
+
+       
         // ========== 构造函数 ==========
         public MainWindow()
         {
             InitializeComponent();
+            CommandBindings.Add(new CommandBinding(LoadUrdfCommand, (s, e) => MenuLoadUrdf_Click(s, null)));
+            CommandBindings.Add(new CommandBinding(CloseUrdfCommand, (s, e) => MenuCloseUrdf_Click(s, null)));
+            CommandBindings.Add(new CommandBinding(ExitCommand, (s, e) => MenuExit_Click(s, null)));
+            CommandBindings.Add(new CommandBinding(ResetViewCommand, (s, e) => MenuResetView_Click(s, null)));
+            CommandBindings.Add(new CommandBinding(ZoomToFitCommand, (s, e) => MenuZoomToFit_Click(s, null)));
+            CommandBindings.Add(new CommandBinding(HelpCommand, (s, e) => MenuHelp_click(s, null)));
+            CommandBindings.Add(new CommandBinding(AboutCommand, (s, e) => MenuAbout_Click(s, null)));
+
             MenuCloseUrdf.IsEnabled = false;
             UpdateStatusBarNotification("就绪");
             UpdateStatusBarNotification("欢迎使用 URDF Importer！");
@@ -169,8 +188,9 @@ namespace URDFImporter
         #region 帮助菜单事件
         private void MenuAbout_Click(object sender, RoutedEventArgs e)
         {
-            string aboutMessage = @"URDF Importer v1.0\n\n这是一个用于加载和显示URDF文件的工具。\n\n功能特性：\n• 加载URDF文件\n• 3D可视化机器人模型\n• 交互式3D视图操作\n• 坐标系显示\n\n开发环境：\n• .NET 8.0\n• WPF\n• HelixToolkit\n\n版权所有 ©JavenChan 2025";
-            UpdateStatusBarNotification(aboutMessage);
+            About about = new About();
+            about.WindowStartupLocation = WindowStartupLocation.CenterScreen;
+            about.Show();
         }
         #endregion
 
@@ -449,8 +469,8 @@ namespace URDFImporter
                 MainViewport.Children.Remove(v);
             linkVisuals.Clear();
 
-
             var importer = new ModelImporter();
+            var assimpContext = new Assimp.AssimpContext();
 
             foreach (var link in robot.Links)
             {
@@ -458,7 +478,7 @@ namespace URDFImporter
                 if (link.Visual?.Geometry?.Mesh != null && !string.IsNullOrEmpty(link.Visual.Geometry.Mesh.Filename))
                 {
                     string meshPath = link.Visual.Geometry.Mesh.Filename;
-                    UpdateStatusBarNotification($"[调试] 原始mesh路径: {meshPath}");
+                    // 处理 package:// 路径
                     if (meshPath.StartsWith("package://") && lastPackagePath != null)
                     {
                         var relPath = meshPath.Substring("package://".Length);
@@ -466,19 +486,15 @@ namespace URDFImporter
                         if (slashIndex >= 0)
                             relPath = relPath.Substring(slashIndex + 1);
                         meshPath = System.IO.Path.Combine(lastPackagePath, relPath.Replace('/', System.IO.Path.DirectorySeparatorChar));
-                        UpdateStatusBarNotification($"[调试] 转换后mesh路径: {meshPath}");
                     }
                     // 如果文件不存在，尝试在 package 下的 meshes 文件夹递归查找
                     if (!File.Exists(meshPath) && lastPackagePath != null)
                     {
                         string meshesDir = Path.Combine(lastPackagePath, "meshes");
-                        UpdateStatusBarNotification($"[调试] meshesDir: {meshesDir}");
                         if (Directory.Exists(meshesDir))
                         {
                             string meshFileName = Path.GetFileName(link.Visual.Geometry.Mesh.Filename);
-                            UpdateStatusBarNotification($"[调试] meshFileName: {meshFileName}");
                             var allFiles = Directory.GetFiles(meshesDir, "*", SearchOption.AllDirectories);
-                            UpdateStatusBarNotification($"[调试] meshes下文件数: {allFiles.Length}");
                             // 优先全名匹配，其次模糊包含，忽略大小写
                             var foundFiles = allFiles
                                 .Where(f => string.Equals(Path.GetFileName(f), meshFileName, StringComparison.OrdinalIgnoreCase))
@@ -488,25 +504,11 @@ namespace URDFImporter
                                 foundFiles = allFiles
                                     .Where(f => Path.GetFileName(f).IndexOf(meshFileName, StringComparison.OrdinalIgnoreCase) >= 0)
                                     .ToList();
-                                UpdateStatusBarNotification($"[调试] 模糊匹配结果数: {foundFiles.Count}");
-                            }
-                            else
-                            {
-                                UpdateStatusBarNotification($"[调试] 全名匹配结果数: {foundFiles.Count}");
                             }
                             if (foundFiles.Count > 0)
                             {
                                 meshPath = foundFiles.OrderBy(f => f.Length).First();
-                                UpdateStatusBarNotification($"[调试] 匹配到mesh路径: {meshPath}");
                             }
-                            else
-                            {
-                                UpdateStatusBarNotification($"[调试] 未找到匹配mesh文件");
-                            }
-                        }
-                        else
-                        {
-                            UpdateStatusBarNotification($"[调试] meshes目录不存在: {meshesDir}");
                         }
                     }
                     if (File.Exists(meshPath))
@@ -514,28 +516,58 @@ namespace URDFImporter
                         var ext = Path.GetExtension(meshPath).ToLowerInvariant();
                         try
                         {
-                            if (ext == ".stl")
+                            if (ext == ".stl" || ext == ".obj")
                             {
+                                // HelixToolkit 支持 STL 和 OBJ
                                 model = importer.Load(meshPath);
                             }
                             else if (ext == ".dae")
                             {
-                                model = importer.Load(meshPath);
+                                // 使用 AssimpNet 加载 DAE
+                                var scene = assimpContext.ImportFile(meshPath, Assimp.PostProcessSteps.Triangulate | Assimp.PostProcessSteps.GenerateNormals);
+                                if (scene != null && scene.MeshCount > 0)
+                                {
+                                    var group = new Model3DGroup();
+                                    foreach (var mesh in scene.Meshes)
+                                    {
+                                        var geometry = new MeshGeometry3D();
+                                        foreach (var v in mesh.Vertices)
+                                            geometry.Positions.Add(new Point3D(v.X, v.Y, v.Z));
+                                        for (int i = 0; i < mesh.FaceCount; i++)
+                                        {
+                                            var face = mesh.Faces[i];
+                                            if (face.IndexCount == 3)
+                                            {
+                                                geometry.TriangleIndices.Add(face.Indices[0]);
+                                                geometry.TriangleIndices.Add(face.Indices[1]);
+                                                geometry.TriangleIndices.Add(face.Indices[2]);
+                                            }
+                                        }
+                                        if (mesh.HasNormals)
+                                        {
+                                            foreach (var n in mesh.Normals)
+                                                geometry.Normals.Add(new Vector3D(n.X, n.Y, n.Z));
+                                        }
+                                        // 可选：处理纹理坐标、材质等
+                                        var material = Materials.LightGray;
+                                        var model3d = new GeometryModel3D(geometry, material);
+                                        group.Children.Add(model3d);
+                                    }
+                                    if (group.Children.Count > 0)
+                                    {
+                                        model = group;
+                                    }
+                                }
                             }
                             // 可扩展更多格式
                         }
-                        catch (Exception ex)
-                        {
-                            UpdateStatusBarNotification($"[调试] 加载模型异常: {ex.Message}");
-                        }
-                    }
-                    else
-                    {
-                        UpdateStatusBarNotification($"链接 {link.Name} 的网格文件不存在：{meshPath}");
+                        catch { /* 忽略单个模型加载异常 */ }
                     }
                 }
+                // 加载失败则用方块代替
                 if (model == null)
                 {
+                    UpdateStatusBarNotification(link.Name + "加载失败，暂用方块代替，请检查！");
                     var box = new HelixToolkit.Wpf.BoxVisual3D
                     {
                         Width = 0.05,
@@ -859,6 +891,13 @@ namespace URDFImporter
             
         }
         #endregion
+
+        private void MenuHelp_click(object sender, RoutedEventArgs e)
+        {
+            Help help = new Help();
+            help.WindowStartupLocation = WindowStartupLocation.CenterScreen;
+            help.Show();
+        }
     }
 
    
