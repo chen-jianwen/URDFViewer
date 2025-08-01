@@ -5,22 +5,27 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:URDFImporter"
         mc:Ignorable="d"
-        Title="Help" Height="650" Width="850">
+        Title="Help" Height="650" Width="850"
+        Icon="Assets/Icon.png">
     <Grid Background="#F7F7F7">
-        <Border CornerRadius="12" Background="White" Padding="32" Margin="40">
+        <Border CornerRadius="12" Background="White" Padding="32" Margin="20">
             <ScrollViewer VerticalScrollBarVisibility="Auto">
                 <StackPanel Margin="10,10,10,10">
                     <TextBlock Text="帮助中心" FontSize="28" FontWeight="Bold" Foreground="#2D5A9B" Margin="0,0,0,18" />
                     <TextBlock Text="URDF Importer 是一款用于加载和可视化URDF机器人模型的工具。" FontSize="16" Foreground="#444" Margin="0,0,0,12" TextWrapping="Wrap" />
                     <TextBlock Text="操作指南" FontSize="20" FontWeight="SemiBold" Foreground="#2D5A9B" Margin="0,16,0,8" />
                     <TextBlock FontSize="14" Foreground="#444" Margin="0,0,0,8" TextWrapping="Wrap">
-                        <Run Text="1. 点击菜单栏‘文件’->‘打开URDF’，选择机器人模型文件。"/>
+                        <Run Text="1. 点击菜单栏 ‘文件’ -> ‘加载URDF文件夹’，选择包含 URDF 文件的机器人模型文件夹，点击确定后模型将自动加载到右侧 3D 视图。"/>
                         <LineBreak/>
-                        <Run Text="2. 通过左侧树状结构浏览机器人拓扑。"/>
+                        <Run Text="2. 在左侧 ‘机器人URDF’ 树中浏览机器人结构，点击不同连杆或关节可查看详细属性信息。"/>
                         <LineBreak/>
-                        <Run Text="3. 使用下方滑块调整关节参数，实时查看模型变化。"/>
+                        <Run Text="3. 右侧 3D 视图支持鼠标拖拽旋转、滚轮缩放、右键平移等操作，可自由调整观察角度。"/>
                         <LineBreak/>
-                        <Run Text="4. 可通过视图菜单显示/隐藏连杆和关节坐标系。"/>
+                        <Run Text="4. 使用 3D 视图上方的滑块面板调整关节角度，模型会实时响应变化。"/>
+                        <LineBreak/>
+                        <Run Text="5. 通过菜单栏 ‘视图’ 可切换连杆模型和关节坐标系的显示与隐藏，便于聚焦不同信息。"/>
+                        <LineBreak/>
+                        <Run Text="6. 如需重置视角或缩放到适合，可点击右上角悬浮按钮或使用快捷键。"/>
                     </TextBlock>
                     <TextBlock Text="常见问题" FontSize="20" FontWeight="SemiBold" Foreground="#2D5A9B" Margin="0,16,0,8" />
                     <Expander Header="为什么无法加载模型？" Margin="0,0,0,16">

@@ -5,11 +5,13 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:URDFImporter"
         mc:Ignorable="d"
-        Title="关于" Height="800" Width="600">
+        Title="关于" Height="800" Width="600"
+        Icon="Assets/Icon.png">
     <Grid Background="#F7F7F7">
-        <Border CornerRadius="16" Background="White" Padding="40" Margin="60">
+        <Border CornerRadius="16" Background="White" Padding="40" Margin="20">
             <Grid>
                 <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
                     <RowDefinition Height="Auto"/>
                     <RowDefinition Height="Auto"/>
                     <RowDefinition Height="Auto"/>
@@ -22,13 +24,13 @@
                     <ColumnDefinition Width="*"/>
                 </Grid.ColumnDefinitions>
                 <!-- Logo区 可替换为实际图片 -->
-                <!--<Image Source="Assets/logo.png" Width="80" Height="80" Margin="0,0,0,12" Stretch="Uniform" Grid.Row="0" HorizontalAlignment="Center"/>-->
-                <TextBlock Text="URDF Importer" FontSize="36" FontWeight="Bold" Foreground="#2D5A9B" HorizontalAlignment="Center" Grid.Row="0" Margin="0,0,0,10" />
-                <TextBlock Text="版本 1.0" FontSize="17" Foreground="#666" HorizontalAlignment="Center" Grid.Row="1" Margin="0,0,0,4" />
-                <TextBlock Text="作者：JavenChan" FontSize="17" Foreground="#666" HorizontalAlignment="Center" Grid.Row="2" Margin="0,0,0,10" />
-                <Separator Grid.Row="3" Margin="0,8,0,8" />
-                <TextBlock Text="这是一个用于加载和显示URDF文件的工具。" FontSize="16" Foreground="#444" TextAlignment="Center" TextWrapping="Wrap" Grid.Row="4" Margin="0,0,0,8" />
-                <Border Grid.Row="5" Background="#F7F7F7" CornerRadius="8" Padding="16" Margin="0,0,0,8">
+                <Image Source="Assets/Icon.png" Width="80" Height="80" Margin="0,0,0,12" Stretch="Uniform" Grid.Row="0" HorizontalAlignment="Center"/>
+                <TextBlock Text="URDF Importer" FontSize="36" FontWeight="Bold" Foreground="#2D5A9B" HorizontalAlignment="Center" Grid.Row="1" Margin="0,0,0,10" />
+                <TextBlock Text="版本 1.0" FontSize="17" Foreground="#666" HorizontalAlignment="Center" Grid.Row="2" Margin="0,0,0,4" />
+                <TextBlock Text="作者：JavenChan" FontSize="17" Foreground="#666" HorizontalAlignment="Center" Grid.Row="3" Margin="0,0,0,10" />
+                <Separator Grid.Row="4" Margin="0,8,0,8" />
+                <TextBlock Text="这是一个用于加载和显示URDF文件的工具。" FontSize="16" Foreground="#444" TextAlignment="Center" TextWrapping="Wrap" Grid.Row="5" Margin="0,0,0,8" />
+                <Border Grid.Row="6" Background="#F7F7F7" CornerRadius="8" Padding="16" Margin="0,0,0,8">
                     <StackPanel>
                         <TextBlock Text="功能特性" FontSize="16" FontWeight="SemiBold" Foreground="#2D5A9B" Margin="0,0,0,8" />
                         <TextBlock FontSize="15" Foreground="#444" TextAlignment="Left">
@@ -42,7 +44,7 @@
                         </TextBlock>
                     </StackPanel>
                 </Border>
-                <StackPanel Grid.Row="6" HorizontalAlignment="Center">
+                <StackPanel Grid.Row="7" HorizontalAlignment="Center">
                     <TextBlock Text="开发环境：.NET 8.0 / WPF / HelixToolkit" FontSize="14" Foreground="#888" HorizontalAlignment="Center" Margin="0,0,0,2" />
                     <TextBlock Text="版权所有 © JavenChan 2025" FontSize="13" Foreground="#AAA" HorizontalAlignment="Center" Margin="0,2,0,0" />
                     <TextBlock FontSize="14" Foreground="#888" Margin="0,10,0,0" TextWrapping="Wrap">

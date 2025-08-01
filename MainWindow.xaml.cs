@@ -31,6 +31,9 @@ namespace URDFImporter
         private bool showLinks = true;
         private bool showJointCoordinates = true;
 
+        // 单位切换 true=角度，false=弧度
+        private bool isDegreeMode = false;
+
 
         // ========== 快捷指令 ==========
         public static readonly RoutedCommand LoadUrdfCommand = new RoutedCommand();
@@ -192,14 +195,21 @@ namespace URDFImporter
             about.WindowStartupLocation = WindowStartupLocation.CenterScreen;
             about.Show();
         }
+
+        private void MenuHelp_click(object sender, RoutedEventArgs e)
+        {
+            Help help = new Help();
+            help.WindowStartupLocation = WindowStartupLocation.CenterScreen;
+            help.Show();
+        }
         #endregion
 
-       
+
 
         // ========== 主要业务逻辑 ==========
         #region 主要业务逻辑
 
-        
+
 
 
 
@@ -428,18 +438,33 @@ namespace URDFImporter
             foreach (var (key, value) in rows)
             {
                 InfoGrid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
-                var keyBlock = new TextBlock { Text = key, FontWeight = FontWeights.Bold, Margin = new Thickness(2,2,8,2), VerticalAlignment = VerticalAlignment.Center };
-                var valueBlock = new TextBlock { Text = value, TextWrapping = TextWrapping.Wrap, Margin = new Thickness(2,2,2,2), VerticalAlignment = VerticalAlignment.Center };
+                var keyBlock = new TextBlock
+                {
+                    Text = key,
+                    FontWeight = FontWeights.Bold,
+                    Margin = new Thickness(2, 2, 8, 2),
+                    VerticalAlignment = VerticalAlignment.Center
+                };
+                var valueBox = new TextBox
+                {
+                    Text = value,
+                    TextWrapping = TextWrapping.Wrap,
+                    Margin = new Thickness(2, 2, 2, 2),
+                    VerticalAlignment = VerticalAlignment.Center,
+                    IsReadOnly = true, // 设置为只读
+                    BorderThickness = new Thickness(0) // 去掉边框
+                };
                 Grid.SetRow(keyBlock, row); Grid.SetColumn(keyBlock, 0);
-                Grid.SetRow(valueBlock, row); Grid.SetColumn(valueBlock, 1);
+                Grid.SetRow(valueBox, row); Grid.SetColumn(valueBox, 1);
                 InfoGrid.Children.Add(keyBlock);
-                InfoGrid.Children.Add(valueBlock);
+                InfoGrid.Children.Add(valueBox);
                 row++;
             }
             InfoGrid.ColumnDefinitions.Clear();
             InfoGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(80) });
             InfoGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
         }
+
 
         private TreeViewItem BuildLinkTreeItem(string linkName, Dictionary<string, List<Joint>> linkToJoints)
         {
@@ -567,15 +592,8 @@ namespace URDFImporter
                 // 加载失败则用方块代替
                 if (model == null)
                 {
-                    UpdateStatusBarNotification(link.Name + "加载失败，暂用方块代替，请检查！");
-                    var box = new HelixToolkit.Wpf.BoxVisual3D
-                    {
-                        Width = 0.05,
-                        Height = 0.05,
-                        Length = 0.05,
-                        Fill = Brushes.SkyBlue
-                    };
-                    model = box.Content;
+                    UpdateStatusBarNotification(link.Name + "模型加载失败，请检查！");
+                    // 不用方块替代，直接空着
                 }
                 var visual = new ModelVisual3D
                 {
@@ -621,6 +639,24 @@ namespace URDFImporter
             if (JointSlidersPanel == null || robot?.Joints == null)
                 return;
             JointSlidersPanel.Children.Clear();
+
+            // 单位切换控件
+            var unitPanel = new StackPanel { Orientation = Orientation.Horizontal, Margin = new Thickness(0, 4, 0, 8) };
+            var unitLabel = new TextBlock { Text = "单位：", Foreground = Brushes.White, FontWeight = FontWeights.Bold, VerticalAlignment = VerticalAlignment.Center };
+            var unitCombo = new ComboBox { Width = 100, Margin = new Thickness(8,0,0,0), VerticalAlignment = VerticalAlignment.Center };
+            unitCombo.Items.Add("弧度(rad)");
+            unitCombo.Items.Add("角度(°)");
+            unitCombo.SelectedIndex = isDegreeMode ? 1 : 0;
+            unitPanel.Children.Add(unitLabel);
+            unitPanel.Children.Add(unitCombo);
+            JointSlidersPanel.Children.Add(unitPanel);
+
+            unitCombo.SelectionChanged += (s, e) =>
+            {
+                isDegreeMode = unitCombo.SelectedIndex == 1;
+                CreateJointSliders(); // 重新渲染滑块区
+            };
+
             foreach (var joint in robot.Joints)
             {
                 if (joint.Type == JointType.Fixed)
@@ -633,12 +669,21 @@ namespace URDFImporter
                     Foreground = Brushes.White,
                     VerticalAlignment = VerticalAlignment.Center
                 };
+                double min = joint.Limit?.Lower ?? -3.14;
+                double max = joint.Limit?.Upper ?? 3.14;
+                double value = joint.JointValue;
+                if (isDegreeMode)
+                {
+                    min = min * 180.0 / Math.PI;
+                    max = max * 180.0 / Math.PI;
+                    value = value * 180.0 / Math.PI;
+                }
                 var slider = new Slider
                 {
                     Width = 120,
-                    Minimum = joint.Limit?.Lower ?? -3.14,
-                    Maximum = joint.Limit?.Upper ?? 3.14,
-                    Value = 0,
+                    Minimum = min,
+                    Maximum = max,
+                    Value = value,
                     Margin = new Thickness(5, 0, 5, 0),
                     Tag = joint.Name
                 };
@@ -660,7 +705,10 @@ namespace URDFImporter
                         var targetJoint = robot.Joints.FirstOrDefault(j => j.Name == jointName);
                         if (targetJoint != null)
                         {
-                            targetJoint.JointValue = slider.Value;
+                            double v = slider.Value;
+                            if (isDegreeMode)
+                                v = v * Math.PI / 180.0;
+                            targetJoint.JointValue = v;
                         }
                     }
                     UpdateJointCoordinateSystems();
@@ -694,6 +742,7 @@ namespace URDFImporter
                 JointSlidersPanel.Children.Add(panel);
             }
         }
+        
 
         private void UpdateLinkVisuals()
         {
@@ -892,12 +941,7 @@ namespace URDFImporter
         }
         #endregion
 
-        private void MenuHelp_click(object sender, RoutedEventArgs e)
-        {
-            Help help = new Help();
-            help.WindowStartupLocation = WindowStartupLocation.CenterScreen;
-            help.Show();
-        }
+        
     }
 
    

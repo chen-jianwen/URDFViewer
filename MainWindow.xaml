@@ -8,7 +8,8 @@
         xmlns:hc="https://handyorg.github.io/handycontrol"
         mc:Ignorable="d"
         Title="URDF Importer" Height="600" Width="800"
-        WindowState="Maximized">
+        WindowState="Maximized"
+        Icon="Assets/Icon.png">
     <Window.Resources>
         <local:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
         <local:BoolToCollapsedVisibilityConverter x:Key="BoolToCollapsedVisibilityConverter"/>

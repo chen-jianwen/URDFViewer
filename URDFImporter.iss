@@ -8,13 +8,15 @@ OutputDir=Output
 OutputBaseFilename=URDFImporterSetup
 Compression=lzma
 SolidCompression=yes
+SetupIconFile=Assets\Icon.ico
 
 [Files]
 Source: "bin\Release\net8.0-windows\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
+Source: "Assets\Icon.ico"; DestDir: "{app}"; Flags: ignoreversion
 
 [Icons]
-Name: "{group}\URDFImporter"; Filename: "{app}\URDFImporter.exe"
-Name: "{commondesktop}\URDFImporter"; Filename: "{app}\URDFImporter.exe"; Tasks: desktopicon
+Name: "{group}\URDFImporter"; Filename: "{app}\URDFImporter.exe"; 
+Name: "{commondesktop}\URDFImporter"; Filename: "{app}\URDFImporter.exe"; Tasks: desktopicon; 
 
 [Tasks]
 Name: "desktopicon"; Description: "创建桌面快捷方式"; GroupDescription: "附加任务："
