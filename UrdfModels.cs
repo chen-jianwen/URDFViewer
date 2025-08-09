@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using System.Xml.Serialization;
 
-namespace URDFImporter
+namespace URDFViewer
 {
     [XmlRoot("robot")]
     public class Robot

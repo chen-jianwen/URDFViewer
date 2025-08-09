@@ -10,12 +10,12 @@ using System.Collections.Generic;
 using System;
 using System.Linq;
 using System.Numerics;
-using URDFImporter;
+using URDFViewer;
 using System.Xml;
 using System.Windows.Input;
 
 
-namespace URDFImporter
+namespace URDFViewer
 {
     /// <summary>
     /// MainWindow 交互逻辑

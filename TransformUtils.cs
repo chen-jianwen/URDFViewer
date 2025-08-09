@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Numerics;
 
-namespace URDFImporter
+namespace URDFViewer
 {
     public static class TransformUtils
     {

@@ -1,0 +1,39 @@
+﻿<Window x:Class="URDFViewer.TestOpenFolder"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:URDFViewer"
+        mc:Ignorable="d"
+        Title="TestOpenFolder" Height="600" Width="800"
+        WindowState="Maximized"
+        Icon="Assets/Icon.png">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="30" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="30" />
+        </Grid.RowDefinitions>
+
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="1*" />
+            <ColumnDefinition Width="1*" />
+
+        </Grid.ColumnDefinitions>
+
+        <Menu Grid.Row="0" Grid.ColumnSpan="2" FontSize="12" >
+            <MenuItem Header="打开URDF文件夹" Click="OpenURDFFolder"></MenuItem>
+        </Menu>
+
+        <!-- 文件夹结构拓扑树 -->
+        <GroupBox Header="URDF文件夹结构" Margin="5,5,5,5" Grid.Row="1" Style="{StaticResource GroupBoxTab}">
+            <TreeView Name="UrdfFileTreeView"  BorderThickness="0" ItemsSource="{Binding RootItems}">
+                <TreeView.ItemTemplate>
+                    <HierarchicalDataTemplate ItemsSource="{Binding Children}">
+                        <TextBlock Text="{Binding Name}"/>
+                    </HierarchicalDataTemplate>
+                </TreeView.ItemTemplate>
+            </TreeView>
+        </GroupBox>
+    </Grid>
+</Window>

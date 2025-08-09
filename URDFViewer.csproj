@@ -22,6 +22,7 @@
     <PackageReference Include="AssimpNet" Version="4.1.0" />
     <PackageReference Include="HandyControl" Version="3.5.1" />
     <PackageReference Include="HelixToolkit.Core.Wpf" Version="2.27.0" />
+    <PackageReference Include="WindowsAPICodePack.Shell.CommonFileDialogs.Wpf" Version="1.1.5.1" />
   </ItemGroup>
 
   <ItemGroup>

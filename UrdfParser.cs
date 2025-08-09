@@ -2,7 +2,7 @@ using System;
 using System.IO;
 using System.Xml.Serialization;
 
-namespace URDFImporter
+namespace URDFViewer
 {
     public static class UrdfParser
     {
