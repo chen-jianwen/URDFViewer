@@ -13,6 +13,9 @@ using System.Numerics;
 using URDFViewer;
 using System.Xml;
 using System.Windows.Input;
+using WindowsAPICodePack.Dialogs;
+using System.Collections.ObjectModel;
+using System.IO.Packaging;
 
 
 namespace URDFViewer
@@ -30,6 +33,7 @@ namespace URDFViewer
         private readonly Dictionary<string, CoordinateSystemVisual3D> jointCoordinateVisuals = new();
         private bool showLinks = true;
         private bool showJointCoordinates = true;
+        public ObservableCollection<FileSystemItem> RootItems { get; set; } = new();
 
         // 单位切换 true=角度，false=弧度
         private bool isDegreeMode = false;
@@ -49,6 +53,7 @@ namespace URDFViewer
         public MainWindow()
         {
             InitializeComponent();
+
             CommandBindings.Add(new CommandBinding(LoadUrdfCommand, (s, e) => MenuLoadUrdf_Click(s, null)));
             CommandBindings.Add(new CommandBinding(CloseUrdfCommand, (s, e) => MenuCloseUrdf_Click(s, null)));
             CommandBindings.Add(new CommandBinding(ExitCommand, (s, e) => MenuExit_Click(s, null)));
@@ -61,6 +66,8 @@ namespace URDFViewer
             UpdateStatusBarNotification("就绪");
             UpdateStatusBarNotification("欢迎使用 URDF Importer！");
             RegisterStatusExpanderEvents();
+
+            DataContext = this;
         }
 
         /// <summary>
@@ -86,29 +93,26 @@ namespace URDFViewer
 
         // ========== 文件菜单事件 ==========
         #region 文件菜单事件
+
+        private string OpenURDFPackage()
+        {
+            var dialog = new CommonOpenFileDialog
+            {
+                IsFolderPicker = true,
+                Title = "请选择一个文件夹"
+            };
+            if (dialog.ShowDialog() == CommonFileDialogResult.Ok)
+            {
+                return dialog.FileName;
+            }
+            return string.Empty;
+        }
+
+
         private void MenuLoadUrdf_Click(object sender, RoutedEventArgs e)
         {
-            var dialog = new OpenFileDialog
-            {
-                Title = "请选择URDF文件",
-                Filter = "URDF文件 (*.urdf)|*.urdf|所有文件 (*.*)|*.*",
-                CheckFileExists = true,
-                Multiselect = false
-            };
-            if (dialog.ShowDialog() != true) return;
-            string urdfFile = dialog.FileName;
-            string? packagePath = LocatePackageRoot(urdfFile);
-            if (string.IsNullOrEmpty(packagePath))
-            {
-                UpdateStatusBarNotification("未能自动定位到package根目录（需包含 urdf 和 meshes 文件夹）！");
-                return;
-            }
-            currentUrdfPath = urdfFile;
-            lastPackagePath = packagePath;
-            LoadUrdfFile(currentUrdfPath, lastPackagePath);
-            MenuCloseUrdf.IsEnabled = true;
-            Title = $"URDF Importer - {Path.GetFileName(currentUrdfPath)}";
-            UpdateStatusBarNotification($"已加载URDF文件：{Path.GetFileName(currentUrdfPath)}");
+            string package = OpenURDFPackage();
+            LoadUrdfPackage(package);
         }
 
         private void MenuCloseUrdf_Click(object sender, RoutedEventArgs e)
@@ -118,6 +122,8 @@ namespace URDFViewer
                 ClearViewport();
                 if (JointSlidersPanel != null)
                     JointSlidersPanel.Children.Clear(); // 清空所有滑块
+                if (UrdfFileTreeView != null)
+                    UrdfFileTreeView.Items.Clear(); // 清空文件树
                 if (UrdfTreeView != null)
                     UrdfTreeView.Items.Clear(); // 清空树
                 
@@ -855,6 +861,52 @@ namespace URDFViewer
 
         // ========== 辅助方法 ==========
         #region 辅助方法
+
+        public FileSystemItem LoadDirectory(string path)
+        {
+            var item = new FileSystemItem
+            {
+                Name = System.IO.Path.GetFileName(path),
+                FullPath = path,
+                IsDirectory = true,
+                Children = new ObservableCollection<FileSystemItem>()
+            };
+
+            // 加载子文件夹
+            foreach (var dir in Directory.GetDirectories(path))
+            {
+                item.Children.Add(LoadDirectory(dir));
+            }
+            // 加载文件
+            foreach (var file in Directory.GetFiles(path))
+            {
+                item.Children.Add(new FileSystemItem
+                {
+                    Name = System.IO.Path.GetFileName(file),
+                    FullPath = file,
+                    IsDirectory = false
+                });
+            }
+            return item;
+        }
+
+        public List<string> FindUrdfFiles(FileSystemItem root)
+        {
+            var urdfFiles = new List<string>();
+            if (!root.IsDirectory && root.FullPath.EndsWith(".urdf", StringComparison.OrdinalIgnoreCase))
+            {
+                urdfFiles.Add(root.FullPath);
+            }
+            if (root.Children != null)
+            {
+                foreach (var child in root.Children)
+                {
+                    urdfFiles.AddRange(FindUrdfFiles(child));
+                }
+            }
+            return urdfFiles;
+        }
+
         /// <summary>
         /// 自动定位package根目录（需包含 urdf 和 meshes 文件夹）
         /// </summary>
@@ -932,16 +984,92 @@ namespace URDFViewer
             return size;
         }
 
-        /// <summary>
-        /// 更新模型统计信息
-        /// </summary>
-        private void UpdateModelStats(int jointCount = 0, int linkCount = 0, int meshCount = 0)
+                private void UpdateFileTreeView(string packagePath)
         {
-            
+            // 清空之前的内容
+            RootItems.Clear();
+            RootItems.Add(LoadDirectory(packagePath));
         }
+
+        private string FindURDFFileFromPackage()
+        {
+            var allUrdfFiles = new List<string>();
+            foreach (var root in RootItems)
+            {
+                allUrdfFiles.AddRange(FindUrdfFiles(root));
+            }
+
+            if (allUrdfFiles.Count == 0)
+            {
+                UpdateStatusBarNotification("未在所选目录及其子目录中找到URDF文件！");
+                return string.Empty;
+            }
+            else if (allUrdfFiles.Count == 1)
+            {
+                return allUrdfFiles[0];
+            }
+            else
+            {
+                // 多个URDF文件，弹出选择对话框
+                var selectDialog = new SelectUrdfWindow(allUrdfFiles);
+                selectDialog.Owner = this;
+                if (selectDialog.ShowDialog() == true)
+                {
+                    return selectDialog.SelectedUrdfFile;
+                }
+                else
+                {
+                    return string.Empty; // 用户取消
+                }
+            }
+        }
+
+        private void LoadUrdfPackage(string package)
+        {
+            if (string.IsNullOrEmpty(package))
+            {
+                UpdateStatusBarNotification("未选择任何文件夹！");
+                return;
+            }
+            else
+            {
+                lastPackagePath = package;
+                UpdateFileTreeView(package);
+            }
+
+            string urdfFile = FindURDFFileFromPackage();
+            if (string.IsNullOrEmpty(urdfFile))
+            {
+                UpdateStatusBarNotification("未找到URDF文件或用户取消选择！");
+                return;
+            }
+            // 加载URDF文件
+            currentUrdfPath = urdfFile;
+            lastPackagePath = package;
+            LoadUrdfFile(currentUrdfPath, lastPackagePath);
+            MenuCloseUrdf.IsEnabled = true;
+            Title = $"URDF Importer - {Path.GetFileName(currentUrdfPath)}";
+            UpdateStatusBarNotification($"已加载URDF文件：{Path.GetFileName(currentUrdfPath)}");
+
+        }
+
+
         #endregion
 
-        
+        private void FolderDrop(object sender, DragEventArgs e)
+        {
+            if (e.Data.GetDataPresent(DataFormats.FileDrop))
+            {
+                string[] paths = (string[])e.Data.GetData(DataFormats.FileDrop);
+                foreach (var path in paths)
+                {
+                    if (Directory.Exists(path))
+                    {
+                        LoadUrdfPackage(path);
+                    }
+                }
+            }
+        }
     }
 
    

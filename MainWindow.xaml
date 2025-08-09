@@ -93,7 +93,9 @@
 
             <!-- 3D视图及悬浮按钮 -->
             <Grid>
-                <h:HelixViewport3D Name="MainViewport" 
+                <h:HelixViewport3D Name="MainViewport"
+                                   AllowDrop="True"
+                                   Drop="FolderDrop"
                                    Margin="5,5,5,5"
                                    Background="White"
                                    ShowCoordinateSystem="True"
@@ -138,23 +140,42 @@
 
         <!-- 左侧：URDF拓扑树和信息通知 -->
         <Grid Grid.Row="1" Grid.Column="0" >
-            <Grid.RowDefinitions>
-                <RowDefinition Height="6*"/>
-                <RowDefinition Height="4*"/>
-            </Grid.RowDefinitions>
-            <!-- URDF拓扑树 -->
-            <GroupBox Header="机器人URDF" Margin="5,5,5,5" Grid.Row="0" Style="{StaticResource GroupBoxTab}">
-                <TreeView Name="UrdfTreeView"  BorderThickness="0"/>
-            </GroupBox>
-            <!-- 属性详情栏 -->
-            <GroupBox Header="属性详情"  Margin="5,0,5,5" Grid.Row="1" Style="{StaticResource GroupBoxTab}">
-                <DockPanel LastChildFill="True">
-                    <ScrollViewer Name="InfoScrollViewer" BorderThickness="0" VerticalScrollBarVisibility="Auto" Background="Transparent" DockPanel.Dock="Top">
-                        <Grid Name="InfoGrid" Margin="0"/>
-                    </ScrollViewer>
-                    <TextBox Name="InfoCopyBox" IsReadOnly="True" TextWrapping="Wrap" BorderThickness="0" Background="Transparent" FontSize="12" Margin="0,4,0,0" VerticalScrollBarVisibility="Auto"/>
-                </DockPanel>
-            </GroupBox>
+            <TabControl Style="{StaticResource TabControlSliding}" TabStripPlacement="Top">
+                <TabItem Header="文件夹">
+                    <!-- 文件夹结构拓扑树 -->
+                    <GroupBox Header="URDF文件夹结构" Margin="5,5,5,5" Grid.Row="1" Style="{StaticResource GroupBoxTab}">
+                        <TreeView Name="UrdfFileTreeView"  BorderThickness="0" ItemsSource="{Binding RootItems}">
+                            <TreeView.ItemTemplate>
+                                <HierarchicalDataTemplate ItemsSource="{Binding Children}">
+                                    <TextBlock Text="{Binding Name}"/>
+                                </HierarchicalDataTemplate>
+                            </TreeView.ItemTemplate>
+                        </TreeView>
+                    </GroupBox>
+                </TabItem>
+                <TabItem Header="机器人">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="6*"/>
+                            <RowDefinition Height="4*"/>
+                        </Grid.RowDefinitions>
+                        <!-- URDF拓扑树 -->
+                        <GroupBox Header="机器人URDF" Margin="5,5,5,5" Grid.Row="0" Style="{StaticResource GroupBoxTab}">
+                            <TreeView Name="UrdfTreeView"  BorderThickness="0"/>
+                        </GroupBox>
+                        <!-- 属性详情栏 -->
+                        <GroupBox Header="属性详情"  Margin="5,0,5,5" Grid.Row="1" Style="{StaticResource GroupBoxTab}">
+                            <DockPanel LastChildFill="True">
+                                <ScrollViewer Name="InfoScrollViewer" BorderThickness="0" VerticalScrollBarVisibility="Auto" Background="Transparent" DockPanel.Dock="Top">
+                                    <Grid Name="InfoGrid" Margin="0"/>
+                                </ScrollViewer>
+                                <TextBox Name="InfoCopyBox" IsReadOnly="True" TextWrapping="Wrap" BorderThickness="0" Background="Transparent" FontSize="12" Margin="0,4,0,0" VerticalScrollBarVisibility="Auto"/>
+                            </DockPanel>
+                        </GroupBox>
+                    </Grid>
+                </TabItem>
+            </TabControl>
+            
         </Grid>
 
         <!-- 状态栏（可展开历史） -->
