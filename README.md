@@ -8,7 +8,6 @@ URDF Viewer 是一款用于加载、可视化和验证 URDF（统一机器人描
 > - [ROS Wiki: URDF](http://wiki.ros.org/urdf)
 > - [ROS 2 Documentation: URDF](https://docs.ros.org/en/rolling/Concepts/Description/URDF.html)
 > - [URDF 教程（英文）](http://wiki.ros.org/urdf/Tutorials)
-> - [URDF 教程（中文翻译）](https://www.ncnynl.com/archives/201610/1046.html)
 
 ---
 
