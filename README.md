@@ -1,5 +1,3 @@
-
-
 # URDF Viewer
 
 URDF Viewer 是一款用于加载、可视化和验证 URDF（统一机器人描述格式，Unified Robot Description Format）文件的 Windows 桌面工具，基于 WPF 开发。
@@ -67,7 +65,9 @@ URDF Viewer 是一款用于加载、可视化和验证 URDF（统一机器人描
 3. 编译完成后，使用 [Inno Setup](https://jrsoftware.org/isinfo.php) 打包生成安装程序：
 	- 脚本文件为 `URDFViewerPackage.iss`，可直接用 Inno Setup 编辑器打开并生成安装包。
 	- 生成的安装包在 `SetupPackage/` 目录下，如 `URDFViewerSetup.exe`。
-4. 用户可直接运行安装包进行软件安装。
+4. 用户可直接运行安装包进行软件安装：
+	- 双击 `URDFViewerSetup.exe`，按照安装向导提示完成安装。
+	- 安装完成后可在开始菜单或桌面快捷方式启动 URDF Viewer。
 
 ---
 
