@@ -5,12 +5,13 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:URDFViewer"
         mc:Ignorable="d"
-        Title="关于" Height="800" Width="600"
+        Title="关于" Height="800" Width="700"
         Icon="Assets/Icon.png">
     <Grid Background="#F7F7F7">
-        <Border CornerRadius="16" Background="White" Padding="40" Margin="20">
+        <Border CornerRadius="16" Background="White" Padding="40" Margin="10">
             <Grid>
                 <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
                     <RowDefinition Height="Auto"/>
                     <RowDefinition Height="Auto"/>
                     <RowDefinition Height="Auto"/>
@@ -24,28 +25,46 @@
                     <ColumnDefinition Width="*"/>
                 </Grid.ColumnDefinitions>
                 <!-- Logo区 可替换为实际图片 -->
-                <Image Source="Assets/Icon.png" Width="80" Height="80" Margin="0,0,0,12" Stretch="Uniform" Grid.Row="0" HorizontalAlignment="Center"/>
-                <TextBlock Text="URDF Viewer" FontSize="36" FontWeight="Bold" Foreground="#2D5A9B" HorizontalAlignment="Center" Grid.Row="1" Margin="0,0,0,10" />
+                <Image Source="Assets/Icon.png" Width="80" Height="80" Margin="0,0,0,5" Stretch="Uniform" Grid.Row="0" HorizontalAlignment="Center"/>
+                <TextBlock Text="URDF Viewer" FontSize="36" FontWeight="Bold" Foreground="#2D5A9B" HorizontalAlignment="Center" Grid.Row="1" Margin="0,0,0,5" />
                 <TextBlock Text="版本 1.0" FontSize="17" Foreground="#666" HorizontalAlignment="Center" Grid.Row="2" Margin="0,0,0,4" />
                 <TextBlock Text="作者：JavenChan" FontSize="17" Foreground="#666" HorizontalAlignment="Center" Grid.Row="3" Margin="0,0,0,10" />
+                <!-- 赞赏码区域，放在作者之下 -->
+                
                 <Separator Grid.Row="4" Margin="0,8,0,8" />
-                <TextBlock Text="这是一个用于加载和显示URDF文件的工具。" FontSize="16" Foreground="#444" TextAlignment="Center" TextWrapping="Wrap" Grid.Row="5" Margin="0,0,0,8" />
-                <Border Grid.Row="6" Background="#F7F7F7" CornerRadius="8" Padding="16" Margin="0,0,0,8">
+                <TextBlock Text="本工具软件用于加载、显示和验证URDF文件。" FontSize="16" Foreground="#444" TextAlignment="Center" TextWrapping="Wrap" Grid.Row="5" Margin="0,0,0,8" />
+                <StackPanel Grid.Row="7" HorizontalAlignment="Center" Margin="0,0,0,8">
+                    <TextBlock Text="如果本工具对你有帮助，欢迎扫码赞赏支持，请作者喝杯咖啡☕" FontSize="13" Foreground="#888" HorizontalAlignment="Center" Margin="0,0,0,6"/>
+                    <Border BorderBrush="#EEE" BorderThickness="1" CornerRadius="8" Padding="6" Background="#FFF" HorizontalAlignment="Center">
+                        <Image Source="Assets/appreciate.jpg" Width="120" Height="120" Stretch="Uniform" />
+                    </Border>
+                </StackPanel>
+                <Border Grid.Row="6" Background="#F7F7F7" CornerRadius="8" Padding="16" Margin="0,0,0,5">
                     <StackPanel>
-                        <TextBlock Text="功能特性" FontSize="16" FontWeight="SemiBold" Foreground="#2D5A9B" Margin="0,0,0,8" />
-                        <TextBlock FontSize="15" Foreground="#444" TextAlignment="Left">
-                            <Run Text="• 加载URDF文件"/>
-                            <LineBreak/>
-                            <Run Text="• 3D可视化机器人模型"/>
-                            <LineBreak/>
-                            <Run Text="• 交互式3D视图操作"/>
-                            <LineBreak/>
-                            <Run Text="• 坐标系显示"/>
-                        </TextBlock>
+                        <TextBlock Text="功能特性" FontSize="16" FontWeight="SemiBold" Foreground="#2D5A9B" Margin="0,0,0,12" />
+                        <ItemsControl>
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <StackPanel Orientation="Horizontal" Margin="0,4,0,4">
+                                        <Ellipse Width="8" Height="8" Fill="#2D5A9B" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                                        <TextBlock Text="{Binding}" FontSize="15" Foreground="#444" VerticalAlignment="Center"/>
+                                    </StackPanel>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                            <ItemsControl.ItemsSource>
+                                <x:Array Type="sys:String" xmlns:sys="clr-namespace:System;assembly=mscorlib">
+                                    <sys:String>拖拽式加载URDF文件</sys:String>
+                                    <sys:String>3D可视化机器人模型</sys:String>
+                                    <sys:String>交互式3D视图操作</sys:String>
+                                    <sys:String>关节坐标系显示/隐藏</sys:String>
+                                    <sys:String>机器人连杆显示/隐藏</sys:String>
+                                </x:Array>
+                            </ItemsControl.ItemsSource>
+                        </ItemsControl>
                     </StackPanel>
                 </Border>
-                <StackPanel Grid.Row="7" HorizontalAlignment="Center">
-                    <TextBlock Text="开发环境：.NET 8.0 / WPF / HelixToolkit" FontSize="14" Foreground="#888" HorizontalAlignment="Center" Margin="0,0,0,2" />
+
+                <StackPanel Grid.Row="8" HorizontalAlignment="Center">
                     <TextBlock Text="版权所有 © JavenChan 2025" FontSize="13" Foreground="#AAA" HorizontalAlignment="Center" Margin="0,2,0,0" />
                     <TextBlock FontSize="14" Foreground="#888" Margin="0,10,0,0" TextWrapping="Wrap">
                         <Run Text="联系邮箱："/>

@@ -99,6 +99,7 @@
                                    Margin="5,5,5,5"
                                    Background="White"
                                    ShowCoordinateSystem="True"
+                                   CoordinateSystemHorizontalPosition="Right"
                                    CoordinateSystemLabelForeground="White"
                                    ShowViewCube="True"
                                    ViewCubeBackText="后"
@@ -135,24 +136,21 @@
                         <StackPanel Name="JointSlidersPanel"/>
                     </StackPanel>
                 </Border>
+                
+                <Expander x:Name="StatusExpander" ExpandDirection="Down" Width="400" IsExpanded="False" BorderThickness="0" Background="AliceBlue" HorizontalAlignment="Left" VerticalAlignment="Bottom" Style="{StaticResource ExpanderBaseStyle}">
+                    <Expander.Header>
+                        <TextBlock x:Name="StatusText" Text="就绪"/>
+                    </Expander.Header>
+                    <Border Padding="4" Background="White" MaxHeight="100">
+                        <TextBox x:Name="StatusHistoryBox" FontSize="12" BorderThickness="0" IsReadOnly="True" TextWrapping="Wrap" VerticalScrollBarVisibility="Auto" AcceptsReturn="True"/>
+                    </Border>
+                </Expander>
             </Grid>
         </Grid>
 
         <!-- 左侧：URDF拓扑树和信息通知 -->
         <Grid Grid.Row="1" Grid.Column="0" >
-            <TabControl Style="{StaticResource TabControlSliding}" TabStripPlacement="Top">
-                <TabItem Header="文件夹">
-                    <!-- 文件夹结构拓扑树 -->
-                    <GroupBox Header="URDF文件夹结构" Margin="5,5,5,5" Grid.Row="1" Style="{StaticResource GroupBoxTab}">
-                        <TreeView Name="UrdfFileTreeView"  BorderThickness="0" ItemsSource="{Binding RootItems}">
-                            <TreeView.ItemTemplate>
-                                <HierarchicalDataTemplate ItemsSource="{Binding Children}">
-                                    <TextBlock Text="{Binding Name}"/>
-                                </HierarchicalDataTemplate>
-                            </TreeView.ItemTemplate>
-                        </TreeView>
-                    </GroupBox>
-                </TabItem>
+            <TabControl Style="{StaticResource TabControlInLine}" TabStripPlacement="Top">
                 <TabItem Header="机器人">
                     <Grid>
                         <Grid.RowDefinitions>
@@ -174,23 +172,22 @@
                         </GroupBox>
                     </Grid>
                 </TabItem>
+                <TabItem Header="文件夹">
+                    <!-- 文件夹结构拓扑树 -->
+                    <GroupBox Header="URDF文件夹结构" Margin="5,5,5,5" Grid.Row="1" Style="{StaticResource GroupBoxTab}">
+                        <TreeView Name="UrdfFileTreeView"  BorderThickness="0" ItemsSource="{Binding RootItems}">
+                            <TreeView.ItemTemplate>
+                                <HierarchicalDataTemplate ItemsSource="{Binding Children}">
+                                    <TextBlock Text="{Binding Name}"/>
+                                </HierarchicalDataTemplate>
+                            </TreeView.ItemTemplate>
+                        </TreeView>
+                    </GroupBox>
+                </TabItem>
             </TabControl>
             
         </Grid>
 
-        <!-- 状态栏（可展开历史） -->
-        <StatusBar Grid.Row="2" Grid.ColumnSpan="2">
-            <StatusBarItem HorizontalAlignment ="Right">
-                <Expander x:Name="StatusExpander" ExpandDirection="Up" IsExpanded="False" Width="auto" BorderThickness="0" Background="Transparent">
-                    <Expander.Header>
-                        <TextBlock x:Name="StatusText" Text="就绪"/>
-                    </Expander.Header>
-                    <Border Padding="4" Background="White" MaxHeight="100">
-                        <TextBox x:Name="StatusHistoryBox" FontSize="12" BorderThickness="0" IsReadOnly="True" TextWrapping="Wrap" VerticalScrollBarVisibility="Auto" AcceptsReturn="True"/>
-                    </Border>
-                </Expander>
-            </StatusBarItem>
-        </StatusBar>
 
     </Grid>
 </Window>

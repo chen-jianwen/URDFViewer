@@ -1,11 +1,11 @@
 ; -- Inno Setup 脚本模板 --
 [Setup]
-AppName=URDFImporter
+AppName=URDFViewer
 AppVersion=1.0.0
-DefaultDirName={autopf}\URDFImporter
-DefaultGroupName=URDFImporter
+DefaultDirName={autopf}\URDFViewer
+DefaultGroupName=URDFViewer
 OutputDir=Output
-OutputBaseFilename=URDFImporterSetup
+OutputBaseFilename=URDFViewerSetup
 Compression=lzma
 SolidCompression=yes
 SetupIconFile=Assets\Icon.ico
@@ -15,11 +15,11 @@ Source: "bin\Release\net8.0-windows\*"; DestDir: "{app}"; Flags: ignoreversion r
 Source: "Assets\Icon.ico"; DestDir: "{app}"; Flags: ignoreversion
 
 [Icons]
-Name: "{group}\URDFImporter"; Filename: "{app}\URDFImporter.exe"; 
-Name: "{commondesktop}\URDFImporter"; Filename: "{app}\URDFImporter.exe"; Tasks: desktopicon; 
+Name: "{group}\URDFViewer"; Filename: "{app}\URDFViewer.exe"; 
+Name: "{commondesktop}\URDFViewer"; Filename: "{app}\URDFViewer.exe"; Tasks: desktopicon; 
 
 [Tasks]
 Name: "desktopicon"; Description: "创建桌面快捷方式"; GroupDescription: "附加任务："
 
 [Run]
-Filename: "{app}\URDFImporter.exe"; Description: "运行 URDFImporter"; Flags: nowait postinstall skipifsilent
+Filename: "{app}\URDFViewer.exe"; Description: "运行 URDFViewer"; Flags: nowait postinstall skipifsilent

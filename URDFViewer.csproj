@@ -10,11 +10,15 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="Assets\appreciate.jpg" />
     <None Remove="Assets\Icon.ico" />
     <None Remove="Assets\Icon.png" />
   </ItemGroup>
 
   <ItemGroup>
+    <Resource Include="Assets\appreciate.jpg">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Resource>
     <Content Include="Assets\Icon.ico" />
   </ItemGroup>
 

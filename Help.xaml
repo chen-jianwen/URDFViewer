@@ -12,10 +12,10 @@
             <ScrollViewer VerticalScrollBarVisibility="Auto">
                 <StackPanel Margin="10,10,10,10">
                     <TextBlock Text="帮助中心" FontSize="28" FontWeight="Bold" Foreground="#2D5A9B" Margin="0,0,0,18" />
-                    <TextBlock Text="URDF Viewer 是一款用于加载和可视化URDF机器人模型的工具。" FontSize="16" Foreground="#444" Margin="0,0,0,12" TextWrapping="Wrap" />
+                    <TextBlock Text="URDF Viewer 是一款用于加载、可视化和验证URDF机器人模型的工具。" FontSize="16" Foreground="#444" Margin="0,0,0,12" TextWrapping="Wrap" />
                     <TextBlock Text="操作指南" FontSize="20" FontWeight="SemiBold" Foreground="#2D5A9B" Margin="0,16,0,8" />
                     <TextBlock FontSize="14" Foreground="#444" Margin="0,0,0,8" TextWrapping="Wrap">
-                        <Run Text="1. 点击菜单栏 ‘文件’ -> ‘加载URDF文件夹’，选择包含 URDF 文件的机器人模型文件夹，点击确定后模型将自动加载到右侧 3D 视图。"/>
+                        <Run Text="1. 拖拽包含 URDF 文件的机器人模型文件夹至 3D 视图，或者点击菜单栏 ‘文件’ -> ‘加载URDF文件夹’，模型将自动加载到右侧 3D 视图。"/>
                         <LineBreak/>
                         <Run Text="2. 在左侧 ‘机器人URDF’ 树中浏览机器人结构，点击不同连杆或关节可查看详细属性信息。"/>
                         <LineBreak/>

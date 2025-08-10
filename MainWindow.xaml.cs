@@ -63,8 +63,8 @@ namespace URDFViewer
             CommandBindings.Add(new CommandBinding(AboutCommand, (s, e) => MenuAbout_Click(s, null)));
 
             MenuCloseUrdf.IsEnabled = false;
-            UpdateStatusBarNotification("就绪");
-            UpdateStatusBarNotification("欢迎使用 URDF Importer！");
+            UpdateStatusBarNotification("欢迎使用 URDF Viewer！");
+            UpdateStatusBarNotification("拖拽URDF文件夹至3D区域即可展示机器人！");
             RegisterStatusExpanderEvents();
 
             DataContext = this;
@@ -111,6 +111,21 @@ namespace URDFViewer
 
         private void MenuLoadUrdf_Click(object sender, RoutedEventArgs e)
         {
+            // 判断当前是否已加载URDF
+            if (!string.IsNullOrEmpty(currentUrdfPath))
+            {
+                var result = MessageBox.Show(
+                    "已加载URDF文件，是否关闭当前并加载新文件？",
+                    "提示",
+                    MessageBoxButton.YesNo,
+                    MessageBoxImage.Question);
+
+                if (result != MessageBoxResult.Yes)
+                    return;
+
+                MenuCloseUrdf_Click(sender, e); // 关闭当前URDF
+            }
+
             string package = OpenURDFPackage();
             LoadUrdfPackage(package);
         }
@@ -120,13 +135,16 @@ namespace URDFViewer
             try
             {
                 ClearViewport();
+
                 if (JointSlidersPanel != null)
                     JointSlidersPanel.Children.Clear(); // 清空所有滑块
+
                 if (UrdfFileTreeView != null)
-                    UrdfFileTreeView.Items.Clear(); // 清空文件树
+                    UrdfFileTreeView.ItemsSource = null; // 解除绑定的数据源
+
                 if (UrdfTreeView != null)
-                    UrdfTreeView.Items.Clear(); // 清空树
-                
+                    UrdfTreeView.Items.Clear(); // 清空所有节点
+
                 currentUrdfPath = "";
                 MenuCloseUrdf.IsEnabled = false;
                 Title = "URDF Importer";
@@ -137,6 +155,7 @@ namespace URDFViewer
                 UpdateStatusBarNotification($"关闭URDF文件时出错：{ex.Message}");
             }
         }
+
 
         private void MenuExit_Click(object sender, RoutedEventArgs e)
         {
